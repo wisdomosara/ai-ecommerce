@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 export default function RegisterPageComponent() {
   const pathname = usePathname();
   const redirectTo = encodeURIComponent(pathname);
-  const BACKEND_URL = `http://localhost:8080/api/auth/google?redirect-to=${redirectTo}`;
+  const BACKEND_URL = `${process.env.BACKEND_URL}/api/auth/google?redirect-to=${redirectTo}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
