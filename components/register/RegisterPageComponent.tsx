@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 export default function RegisterPageComponent() {
   const pathname = usePathname();
   const redirectTo = encodeURIComponent(pathname);
-  const BACKEND_URL = `${process.env.BACKEND_URL}/api/auth/google?redirect-to=${redirectTo}`;
+  const BACKEND_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google?redirect-to=${redirectTo}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
@@ -53,7 +53,7 @@ export default function RegisterPageComponent() {
             <div className="space-y-6">
               {/* Social Sign In */}
               <div className="grid grid-cols-2 gap-4">
-                <Link href={BACKEND_URL} className="w-full">
+                <Link href={BACKEND_URL} passHref className="w-full">
                   <Button variant="outline" className="w-full">
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
