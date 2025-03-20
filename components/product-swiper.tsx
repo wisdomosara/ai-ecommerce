@@ -3,13 +3,6 @@
 import { useState } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Navigation, Thumbs, Zoom } from "swiper/modules"
-import type { Swiper as SwiperType } from "swiper"
-import "swiper/css"
-import "swiper/css/navigation"
-import "swiper/css/thumbs"
-import "swiper/css/zoom"
 
 interface ProductImage {
   src: string
@@ -21,70 +14,82 @@ interface ProductSwiperProps {
 }
 
 export default function ProductSwiper({ images }: ProductSwiperProps) {
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [selectedThumb, setSelectedThumb] = useState(0)
+
+  // Handle main image navigation
+  const goToPrevious = () => {
+    setActiveIndex((prev) => {
+      const newIndex = prev > 0 ? prev - 1 : images.length - 1
+      setSelectedThumb(newIndex)
+      return newIndex
+    })
+  }
+
+  const goToNext = () => {
+    setActiveIndex((prev) => {
+      const newIndex = prev < images.length - 1 ? prev + 1 : 0
+      setSelectedThumb(newIndex)
+      return newIndex
+    })
+  }
+
+  // Handle thumbnail click
+  const handleThumbClick = (index: number) => {
+    setActiveIndex(index)
+    setSelectedThumb(index)
+  }
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Swiper
-          modules={[Navigation, Thumbs, Zoom]}
-          navigation={{
-            prevEl: ".product-swiper-prev",
-            nextEl: ".product-swiper-next",
-          }}
-          thumbs={{ swiper: thumbsSwiper }}
-          zoom={true}
-          loop={true}
-          className="rounded-lg overflow-hidden aspect-square"
-        >
-          {images.map((image, index) => (
-            <SwiperSlide key={index} className="cursor-zoom-in">
-              <div className="swiper-zoom-container">
-                <Image
-                  src={image.src || "/placeholder.svg"}
-                  alt={image.alt}
-                  width={600}
-                  height={600}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="absolute bottom-4 right-4 z-10 bg-background/80 rounded-full p-2">
-                <ZoomIn className="h-5 w-5" />
-              </div>
-            </SwiperSlide>
-          ))}
+      <div className="relative rounded-lg overflow-hidden aspect-square">
+        <div className="relative h-full w-full">
+          <Image
+            src={images[activeIndex]?.src || "/placeholder.svg"}
+            alt={images[activeIndex]?.alt || "Product image"}
+            width={600}
+            height={600}
+            className="object-cover w-full h-full"
+          />
+          <div className="absolute bottom-4 right-4 z-10 bg-background/80 rounded-full p-2">
+            <ZoomIn className="h-5 w-5" />
+          </div>
+        </div>
 
-          <button className="product-swiper-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 flex items-center justify-center shadow-md">
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <button className="product-swiper-next absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 flex items-center justify-center shadow-md">
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </Swiper>
+        <button
+          onClick={goToPrevious}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 flex items-center justify-center shadow-md"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <button
+          onClick={goToNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 flex items-center justify-center shadow-md"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
       </div>
 
-      <Swiper
-        modules={[Thumbs]}
-        watchSlidesProgress
-        onSwiper={setThumbsSwiper}
-        slidesPerView={4}
-        spaceBetween={10}
-        className="thumbs-swiper"
-      >
+      {/* Thumbnails */}
+      <div className="grid grid-cols-4 gap-2">
         {images.map((image, index) => (
-          <SwiperSlide key={index} className="cursor-pointer">
-            <div className="aspect-square rounded-md overflow-hidden border hover:border-primary transition-colors">
-              <Image
-                src={image.src || "/placeholder.svg"}
-                alt={`Thumbnail ${index + 1}`}
-                width={150}
-                height={150}
-                className="object-cover w-full h-full"
-              />
-            </div>
-          </SwiperSlide>
+          <div
+            key={index}
+            className={`aspect-square rounded-md overflow-hidden border cursor-pointer ${
+              selectedThumb === index ? "border-primary" : "hover:border-primary/50"
+            }`}
+            onClick={() => handleThumbClick(index)}
+          >
+            <Image
+              src={image.src || "/placeholder.svg"}
+              alt={`Thumbnail ${index + 1}`}
+              width={150}
+              height={150}
+              className="object-cover w-full h-full"
+            />
+          </div>
         ))}
-      </Swiper>
+      </div>
     </div>
   )
 }

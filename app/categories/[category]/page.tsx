@@ -1,28 +1,62 @@
-import Link from "next/link"
-import Image from "next/image"
-import { notFound } from "next/navigation"
-import { ChevronRight, Filter } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import { ChevronRight, Filter } from "lucide-react";
+import { Metadata } from "next";
 
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
-  // This would come from your database or API
-  const categories = [
-    { name: "Women's Fashion", slug: "womens-fashion" },
-    { name: "Men's Fashion", slug: "mens-fashion" },
-    { name: "Accessories", slug: "accessories" },
-    { name: "Footwear", slug: "footwear" },
-    { name: "Beauty", slug: "beauty" },
-    { name: "Home & Living", slug: "home-living" },
-  ]
+// This would come from your database or API
+const categories = [
+  { name: "Women's Fashion", slug: "womens-fashion" },
+  { name: "Men's Fashion", slug: "mens-fashion" },
+  { name: "Accessories", slug: "accessories" },
+  { name: "Footwear", slug: "footwear" },
+  { name: "Beauty", slug: "beauty" },
+  { name: "Home & Living", slug: "home-living" },
+];
 
-  const category = categories.find((cat) => cat.slug === params.category)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+  const { category: categoryParam } = await params;
+  const category = categories.find((cat) => cat?.slug === categoryParam);
 
   if (!category) {
-    notFound()
+    return {
+      title: "Category Not Found",
+      description: "The requested category could not be found.",
+    };
+  }
+
+  return {
+    title: category.name,
+    description: `Browse our collection of ${category.name.toLowerCase()} products.`,
+  };
+}
+
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}) {
+  const { category: categoryParam } = await params;
+
+  const category = categories?.find((cat) => cat?.slug === categoryParam);
+
+  if (!category) {
+    notFound();
   }
 
   // Mock products for this category
@@ -31,7 +65,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
     name: `${category.name} Product ${i + 1}`,
     price: Math.floor(Math.random() * 100) + 19.99,
     image: `/placeholder.svg?height=400&width=400`,
-  }))
+  }));
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
@@ -41,7 +75,10 @@ export default function CategoryPage({ params }: { params: { category: string } 
           Home
         </Link>
         <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
-        <Link href="/categories" className="text-muted-foreground hover:text-foreground">
+        <Link
+          href="/categories"
+          className="text-muted-foreground hover:text-foreground"
+        >
           Categories
         </Link>
         <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
@@ -103,7 +140,16 @@ export default function CategoryPage({ params }: { params: { category: string } 
               <div>
                 <h3 className="font-medium mb-3">Colors</h3>
                 <div className="flex flex-wrap gap-2">
-                  {["Black", "White", "Red", "Blue", "Green", "Yellow", "Purple", "Pink"].map((color) => (
+                  {[
+                    "Black",
+                    "White",
+                    "Red",
+                    "Blue",
+                    "Green",
+                    "Yellow",
+                    "Purple",
+                    "Pink",
+                  ].map((color) => (
                     <div
                       key={color}
                       className="w-6 h-6 rounded-full border cursor-pointer hover:ring-2 ring-primary ring-offset-2"
@@ -164,7 +210,10 @@ export default function CategoryPage({ params }: { params: { category: string } 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((product) => (
               <Card key={product.id} className="overflow-hidden group">
-                <Link href={`/products/${product.id}`} className="relative block aspect-square">
+                <Link
+                  href={`/products/${product.id}`}
+                  className="relative block aspect-square"
+                >
                   <Image
                     src={product.image || "/placeholder.svg"}
                     alt={product.name}
@@ -173,10 +222,15 @@ export default function CategoryPage({ params }: { params: { category: string } 
                   />
                 </Link>
                 <CardContent className="p-4">
-                  <Link href={`/products/${product.id}`} className="font-medium hover:underline line-clamp-2">
+                  <Link
+                    href={`/products/${product.id}`}
+                    className="font-medium hover:underline line-clamp-2"
+                  >
                     {product.name}
                   </Link>
-                  <p className="text-lg font-bold mt-2">${product.price.toFixed(2)}</p>
+                  <p className="text-lg font-bold mt-2">
+                    ${product.price.toFixed(2)}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -209,6 +263,5 @@ export default function CategoryPage({ params }: { params: { category: string } 
         </div>
       </div>
     </div>
-  )
+  );
 }
-

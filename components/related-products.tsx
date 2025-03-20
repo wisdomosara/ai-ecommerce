@@ -1,10 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Navigation } from "swiper/modules"
-import "swiper/css"
-
 import { type Product, searchProducts } from "@/lib/api"
 import ProductCard from "@/components/product-card"
 
@@ -24,7 +20,7 @@ export default function RelatedProducts({ category, excludeId }: RelatedProducts
         const results = await searchProducts("", category)
         const filtered = excludeId ? results.filter((product) => product.id.toString() !== excludeId) : results
 
-        setProducts(filtered.slice(0, 6)) // Limit to 6 products
+        setProducts(filtered.slice(0, 4)) // Limit to 4 products
       } catch (error) {
         console.error("Failed to load related products:", error)
       } finally {
@@ -46,29 +42,11 @@ export default function RelatedProducts({ category, excludeId }: RelatedProducts
   }
 
   return (
-    <Swiper
-      modules={[Navigation]}
-      navigation
-      slidesPerView={1}
-      spaceBetween={16}
-      breakpoints={{
-        640: {
-          slidesPerView: 2,
-        },
-        768: {
-          slidesPerView: 3,
-        },
-        1024: {
-          slidesPerView: 4,
-        },
-      }}
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {products.map((product) => (
-        <SwiperSlide key={product.id}>
-          <ProductCard {...product} />
-        </SwiperSlide>
+        <ProductCard key={product.id} {...product} />
       ))}
-    </Swiper>
+    </div>
   )
 }
 

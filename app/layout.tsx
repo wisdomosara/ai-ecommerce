@@ -10,7 +10,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "StyleStore | Modern E-commerce",
   description: "Discover the latest fashion trends and styles",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -24,8 +23,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <Navbar />
           {children}
-          <footer className="border-t py-12 px-4 md:px-6">
-            <div className="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {/* Fix footer padding on mobile */}
+          <footer className="border-t py-12 px-[16px] md:px-0">
+            <div className="md:container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
               <div>
                 <h3 className="font-bold mb-4">Shop</h3>
                 <ul className="space-y-2">
@@ -137,6 +137,3 @@ export default function RootLayout({
   )
 }
 
-
-
-import './globals.css'

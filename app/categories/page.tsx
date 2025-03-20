@@ -1,6 +1,6 @@
-import Link from "next/link"
-import Image from "next/image"
-import { ChevronRight } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { ChevronRight } from "lucide-react";
 
 export default function CategoriesPage() {
   const categories = [
@@ -32,7 +32,13 @@ export default function CategoriesPage() {
       name: "Beauty",
       slug: "beauty",
       image: "/placeholder.svg?height=400&width=600",
-      subcategories: ["Skincare", "Makeup", "Haircare", "Fragrance", "Bath & Body"],
+      subcategories: [
+        "Skincare",
+        "Makeup",
+        "Haircare",
+        "Fragrance",
+        "Bath & Body",
+      ],
     },
     {
       name: "Home & Living",
@@ -40,23 +46,30 @@ export default function CategoriesPage() {
       image: "/placeholder.svg?height=400&width=600",
       subcategories: ["Decor", "Bedding", "Kitchen", "Bath", "Furniture"],
     },
-  ]
+  ];
 
   return (
     <div className="container mx-auto py-12 px-4 md:px-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Categories</h1>
-        <p className="text-muted-foreground">Browse all product categories and find what you're looking for.</p>
+        <p className="text-muted-foreground">
+          Browse all product categories and find what you're looking for.
+        </p>
       </div>
 
       <div className="grid gap-8">
-        {categories.map((category) => (
+        {categories?.map((category) => (
           <div
             key={category.slug}
             className="grid md:grid-cols-2 gap-6 items-center border rounded-xl p-6 hover:border-primary transition-colors"
           >
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-              <Image src={category.image || "/placeholder.svg"} alt={category.name} fill className="object-cover" />
+              <Image
+                src={category.image || "/placeholder.svg"}
+                alt={category.name}
+                fill
+                className="object-cover"
+              />
             </div>
             <div>
               <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
@@ -64,7 +77,9 @@ export default function CategoriesPage() {
                 {category.subcategories.map((subcategory) => (
                   <li key={subcategory}>
                     <Link
-                      href={`/categories/${category.slug}/${subcategory.toLowerCase().replace(" ", "-")}`}
+                      href={`/categories/${category.slug}/${subcategory
+                        .toLowerCase()
+                        .replace(" ", "-")}`}
                       className="text-muted-foreground hover:text-primary flex items-center"
                     >
                       <ChevronRight className="h-4 w-4 mr-1" />
@@ -85,6 +100,5 @@ export default function CategoriesPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

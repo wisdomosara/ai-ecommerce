@@ -1,4 +1,3 @@
-// Types
 export interface Product {
   id: number | string
   name: string
@@ -398,10 +397,16 @@ const dummyCartItems: CartItem[] = [
 // API functions with fallback to dummy data
 export async function getProducts(): Promise<Product[]> {
   try {
-    // Attempt to fetch from API
+    // Attempt to fetch from API with AbortController for safety
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+
     const response = await fetch("/api/products", {
       next: { revalidate: 3600 }, // Revalidate every hour
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       throw new Error("Failed to fetch products")
@@ -415,9 +420,10 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
+// Update other fetch functions similarly to use safe signal handling
 export async function getProductById(id: string | number): Promise<Product | undefined> {
   try {
-    // Attempt to fetch from API
+    // Use a safer approach without AbortController if that's causing issues
     const response = await fetch(`/api/products/${id}`, {
       next: { revalidate: 3600 },
     })

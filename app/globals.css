@@ -85,6 +85,15 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Fix mobile padding */
+  @media (max-width: 640px) {
+    .container {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
   }
 }
 

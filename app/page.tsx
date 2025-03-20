@@ -17,7 +17,7 @@ export default function Home() {
 
         {/* Categories Section */}
         <section className="py-12 px-4 md:px-6 lg:py-16">
-          <div className="container mx-auto">
+          <div className="md:container mx-auto">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold tracking-tight">Shop by Category</h2>
               <Link href="/categories" className="flex items-center text-sm font-medium text-primary">
@@ -30,7 +30,7 @@ export default function Home() {
 
         {/* Featured Products */}
         <section className="py-12 px-4 md:px-6 bg-muted/50">
-          <div className="container mx-auto">
+          <div className="md:container mx-auto">
             <h2 className="text-3xl font-bold tracking-tight mb-8">Featured Products</h2>
             <FeaturedProducts />
           </div>
@@ -38,7 +38,7 @@ export default function Home() {
 
         {/* Collections */}
         <section className="py-12 px-4 md:px-6 lg:py-16">
-          <div className="container mx-auto">
+          <div className="md:container mx-auto">
             <h2 className="text-3xl font-bold tracking-tight mb-8">Collections</h2>
             <CollectionShowcase />
           </div>
@@ -46,25 +46,19 @@ export default function Home() {
 
         {/* New Arrivals */}
         <section className="py-12 px-4 md:px-6 bg-muted/50">
-          <div className="container mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-bold tracking-tight">New Arrivals</h2>
-              <Button variant="outline" asChild>
-                <Link href="/new-arrivals">
-                  View all <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+          <div className="md:container mx-auto">
+            
             <NewArrivals />
           </div>
         </section>
 
+        {/* Fix Summer Sale section for mobile */}
         {/* Deals Section */}
         <section className="py-12 px-4 md:px-6 lg:py-16">
-          <div className="container mx-auto">
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-rose-500 to-indigo-700 p-8 md:p-12">
+          <div className="md:container mx-auto">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-rose-500 to-indigo-700 p-0 md:p-12">
               <div className="grid gap-6 md:grid-cols-2 items-center">
-                <div className="text-white">
+                <div className="text-white p-8 md:p-0">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">Summer Sale</h2>
                   <p className="text-lg md:text-xl mb-6 opacity-90">
                     Get up to 50% off on selected items. Limited time offer.
@@ -73,13 +67,13 @@ export default function Home() {
                     <Link href="/deals">Shop Now</Link>
                   </Button>
                 </div>
-                <div className="flex justify-center">
+                <div className="flex justify-center w-full">
                   <Image
                     src="/placeholder.svg?height=300&width=300"
                     alt="Summer Sale"
                     width={300}
                     height={300}
-                    className="object-cover rounded-lg shadow-lg"
+                    className="object-cover w-full h-full md:rounded-lg md:shadow-lg"
                   />
                 </div>
               </div>
@@ -89,7 +83,7 @@ export default function Home() {
 
         {/* Newsletter */}
         <section className="py-12 px-4 md:px-6 bg-muted">
-          <div className="container mx-auto">
+          <div className="md:container mx-auto">
             <div className="max-w-xl mx-auto text-center">
               <h3 className="text-2xl font-bold mb-4">Subscribe to our newsletter</h3>
               <p className="text-muted-foreground mb-6">Stay updated with our latest offers and products</p>
@@ -107,7 +101,7 @@ export default function Home() {
 
         {/* Become a Seller */}
         <section className="py-12 px-4 md:px-6 bg-primary text-primary-foreground">
-          <div className="container mx-auto">
+          <div className="md:container mx-auto">
             <div className="max-w-3xl mx-auto text-center">
               <h3 className="text-2xl font-bold mb-4">Become a Seller on StyleStore</h3>
               <p className="mb-6">
