@@ -1,137 +1,75 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import Navbar from "@/components/navbar"
 import { ThemeProvider } from "@/components/theme-provider"
+import Navbar from "@/components/navbar"
+import { CartProvider } from "@/components/cart-provider"
+import { AuthProvider } from "@/components/auth-provider"
+import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "StyleStore | Modern E-commerce",
-  description: "Discover the latest fashion trends and styles",
+  title: {
+    template: "%s | ShopHub",
+    default: "ShopHub - Modern E-commerce Platform",
+  },
+  description: "A modern e-commerce platform with a wide range of products",
+  metadataBase: new URL("https://shophub.example.com"),
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "#111827" },
+  ],
+  width: "device-width",
+  initialScale: 1,
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <Navbar />
-          {children}
-          {/* Fix footer padding on mobile */}
-          <footer className="border-t py-12 px-[16px] md:px-0">
-            <div className="md:container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="font-bold mb-4">Shop</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      New Arrivals
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Best Sellers
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Sale
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Collections
-                    </a>
-                  </li>
-                </ul>
+          <AuthProvider>
+            <CartProvider>
+              <div className="flex min-h-screen flex-col">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <footer className="border-t py-6 md:py-8">
+                  <div className="container flex flex-col items-center justify-between gap-4 px-4 md:px-6 md:flex-row">
+                    <p className="text-center text-sm text-muted-foreground md:text-left">
+                      &copy; {new Date().getFullYear()} ShopHub. All rights reserved.
+                    </p>
+                  </div>
+                </footer>
               </div>
-              <div>
-                <h3 className="font-bold mb-4">Information</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      About Us
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Contact Us
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Shipping Policy
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Returns & Exchanges
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold mb-4">Customer Service</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      FAQ
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Size Guide
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Track Order
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Support
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold mb-4">Connect</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Instagram
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Facebook
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Twitter
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-muted-foreground hover:text-foreground">
-                      Pinterest
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="container mx-auto mt-12 pt-6 border-t text-center text-muted-foreground">
-              <p>© {new Date().getFullYear()} StyleStore. All rights reserved.</p>
-            </div>
-          </footer>
+            </CartProvider>
+          </AuthProvider>
         </ThemeProvider>
+
+        {/* Add script to fix theme toggle */}
+        <Script id="theme-toggle-fix" strategy="afterInteractive">
+          {`
+            (function() {
+              // On page load or when changing themes, best to add inline in \`head\` to avoid FOUC
+              if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark')
+              } else {
+                document.documentElement.classList.remove('dark')
+              }
+            })()
+          `}
+        </Script>
       </body>
     </html>
   )

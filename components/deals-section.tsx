@@ -1,8 +1,8 @@
 import ProductCard from "@/components/product-card"
-import { getNewArrivals } from "@/lib/data"
+import { getDeals } from "@/lib/data"
 
-export default function NewArrivals() {
-  const products = getNewArrivals()
+export default function DealsSection() {
+  const products = getDeals()
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

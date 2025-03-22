@@ -2,80 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
+
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
+
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
+
     --primary: 240 5.9% 10%;
     --primary-foreground: 0 0% 98%;
+
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
+
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
+
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
 
-    /* Sidebar variables */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --radius: 0.5rem;
   }
 
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
+
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
+
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
+
     --primary: 0 0% 98%;
     --primary-foreground: 240 5.9% 10%;
+
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
+
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
+
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
-
-    /* Sidebar variables */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -85,15 +72,165 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.3s ease, color 0.3s ease;
   }
+}
 
-  /* Fix mobile padding */
-  @media (max-width: 640px) {
-    .container {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
+/* Swiper Customizations */
+.product-swiper .swiper-button-next,
+.product-swiper .swiper-button-prev {
+  display: none;
+}
+
+.swiper-pagination-bullet {
+  opacity: 0.5;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1;
+  background: white !important;
+}
+
+.product-detail-swiper {
+  height: auto;
+  max-height: 500px;
+}
+
+@media (min-width: 768px) {
+  .product-detail-swiper {
+    max-height: none;
   }
+}
+
+.product-detail-swiper .swiper-slide {
+  height: auto;
+  max-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .product-detail-swiper .swiper-slide {
+    max-height: none;
+  }
+}
+
+.thumbs-swiper {
+  padding: 10px 0;
+}
+
+.thumbs-swiper .swiper-slide {
+  width: 60px !important;
+  height: 60px !important;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.thumbs-swiper .swiper-slide-thumb-active {
+  opacity: 1;
+  border: 2px solid hsl(var(--primary));
+}
+
+.collections-swiper,
+.trending-swiper {
+  padding: 10px 0;
+  margin: 0 -10px;
+  padding: 0 10px;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.collections-swiper::-webkit-scrollbar,
+.trending-swiper::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.collections-swiper,
+.trending-swiper {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Fix swiper navigation buttons */
+.swiper-button-disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Animation for dropdowns and sheets */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Apply animations to components */
+.dropdown-content {
+  animation: slideDown 0.2s ease-out;
+}
+
+.mobile-menu {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.mobile-filter {
+  animation: slideInRight 0.5s ease-out; /* Increased animation duration */
+}
+
+.mobile-sidebar {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.dropdown-backdrop {
+  animation: fadeIn 0.2s ease-out;
 }
 

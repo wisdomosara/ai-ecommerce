@@ -1,9 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function SearchLoading() {
+export default function CollectionLoading() {
   return (
     <div className="container py-10">
-      <Skeleton className="mb-8 h-10 w-1/3" />
+      <Skeleton className="mb-2 h-10 w-1/3" />
+      <Skeleton className="mb-8 h-5 w-2/3" />
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {Array(8)

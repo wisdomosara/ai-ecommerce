@@ -4,279 +4,277 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, LayoutDashboard, Sun, Moon } from "lucide-react"
-
+import { usePathname, useRouter } from "next/navigation"
+import { ShoppingCart, User, Search, Menu, X, Sun, Moon, LogIn, UserPlus, LayoutDashboard, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes"
-import { getCartItems } from "@/lib/api"
+import { useAuth } from "@/components/auth-provider"
+import { useCart } from "@/components/cart-provider"
+import { cn } from "@/lib/utils"
 
 export default function Navbar() {
   const pathname = usePathname()
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // This would be from your auth state
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const [cartItemCount, setCartItemCount] = useState(0)
-  const [searchQuery, setSearchQuery] = useState("")
+  const { isAuthenticated, user, logout } = useAuth()
+  const { cartItems } = useCart()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [mounted, setMounted] = useState(false)
 
-  // After mounting, we can safely show the theme toggle
+  // Fix theme toggle by ensuring component is mounted
   useEffect(() => {
     setMounted(true)
-
-    // Get cart item count
-    async function getCartCount() {
-      try {
-        const cartItems = await getCartItems()
-        setCartItemCount(cartItems.length)
-      } catch (error) {
-        console.error("Failed to get cart count:", error)
-      }
-    }
-
-    getCartCount()
   }, [])
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+      setIsMenuOpen(false)
     }
   }
 
-  // Remove "Home", "Collections", "Deals", and "New Arrivals" from the navigation links
-  // Update the navLinks array to only include "Categories"
-  const navLinks = [{ name: "Categories", href: "/categories" }]
+  const handleLogout = () => {
+    logout()
+    setIsMenuOpen(false)
+    router.push("/")
+  }
 
-  // Update the desktop navbar layout
+  const navItems = [
+    { name: "Categories", href: "/categories" },
+    { name: "Collections", href: "/collections" },
+    { name: "Sell", href: "/sell" },
+  ]
+
   return (
-    <header className="sticky top-0 px-[16px] md:px-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="md:container flex h-16 items-center">
-        {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="h-7 w-7 bg-primary rounded-md inline-flex items-center justify-center text-primary-foreground font-bold">
-            S
-          </span>
-          <span className="font-bold text-xl hidden sm:inline-block">StyleStore</span>
-        </Link>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center px-4 md:px-6">
+        <div className="flex items-center">
+          <Link href="/" className="mr-2 md:mr-6 flex items-center space-x-2">
+            <span className="font-bold text-xl">ShopHub</span>
+          </Link>
 
-        {/* Desktop Nav Links - centered with proper spacing */}
-        <nav className="hidden md:flex items-center ml-10 space-x-6 text-sm font-medium">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className={`transition-colors hover:text-primary ${
-                pathname === link.href ? "text-primary" : "text-foreground"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Desktop Search - centered */}
-        <div className="hidden md:flex flex-1 items-center justify-center px-2 max-w-md mx-auto">
-          <div className="w-full relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="w-full bg-background pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
-            />
-          </div>
+          <nav className="hidden md:flex items-center space-x-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  pathname === item.href ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
         </div>
 
-        {/* Right side items */}
-        <div className="flex items-center ml-auto space-x-3">
-          {/* Mobile Search Toggle */}
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSearchOpen(!isSearchOpen)}>
-            {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-          </Button>
+        {/* Desktop search */}
+        <div className="hidden md:flex flex-1 items-center justify-center px-6">
+          <form onSubmit={handleSearch} className="w-full">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search products..."
+                className="w-full pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </form>
+        </div>
 
-          {/* Theme Toggle - Only on desktop */}
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
-              className="hidden md:flex"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-          )}
+        {/* Mobile search */}
+        <div className="flex md:hidden flex-1 items-center justify-center pl-1 pr-2">
+          <form onSubmit={handleSearch} className="w-full">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search..."
+                className="w-full pl-8 h-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </form>
+        </div>
 
-          {/* Cart */}
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/cart">
+        <div className="flex items-center space-x-2 ml-auto">
+          <Link href="/cart">
+            <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">Cart</span>
-              {cartItemCount > 0 && (
-                <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-                  {cartItemCount}
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                  {cartItems.length}
                 </span>
               )}
-            </Link>
-          </Button>
+              <span className="sr-only">Cart</span>
+            </Button>
+          </Link>
 
-          {/* Auth - moved to the right */}
-          {!isLoggedIn ? (
-            <div className="hidden md:flex items-center space-x-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/register">Register</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild className="ml-1">
-                <Link href="/sell">Sell</Link>
-              </Button>
-            </div>
-          ) : (
+          {/* Desktop user menu */}
+          <div className="hidden md:block">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />
-                  <ChevronDown className="h-3 w-3 absolute bottom-1 right-1" />
+                  <span className="sr-only">User menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="flex items-center">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsLoggedIn(false)} className="flex items-center">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="dropdown-content">
+                {isAuthenticated ? (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="flex items-center">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/login" className="flex items-center">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/register" className="flex items-center">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Register
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {mounted && (
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }}
+                  >
+                    {theme === "dark" ? (
+                      <>
+                        <Sun className="mr-2 h-4 w-4" />
+                        Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="mr-2 h-4 w-4" />
+                        Dark Mode
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          </div>
 
-          {/* Mobile Menu */}
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] px-6">
-              <div className="flex items-center mb-6">
-                <Link href="/" className="flex items-center" onClick={() => setIsMenuOpen(false)}>
-                  <span className="h-7 w-7 bg-primary rounded-md inline-flex items-center justify-center text-primary-foreground font-bold mr-2">
-                    S
-                  </span>
-                  <span className="font-bold text-xl">StyleStore</span>
-                </Link>
+          {/* Mobile menu button with avatar */}
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isAuthenticated ? (
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                {user?.name?.charAt(0) || "U"}
               </div>
-              <nav className="flex flex-col gap-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-lg font-medium transition-colors hover:text-primary"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-                <div className="mt-4">
-                  {!isLoggedIn ? (
-                    <div className="flex flex-col gap-2">
-                      <Button asChild onClick={() => setIsMenuOpen(false)}>
-                        <Link href="/login">Login</Link>
-                      </Button>
-                      <Button variant="outline" asChild onClick={() => setIsMenuOpen(false)}>
-                        <Link href="/register">Register</Link>
-                      </Button>
-                      <Button variant="outline" asChild className="mt-2" onClick={() => setIsMenuOpen(false)}>
-                        <Link href="/sell">Become a Seller</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <Button variant="outline" asChild onClick={() => setIsMenuOpen(false)}>
-                        <Link href="/dashboard">Dashboard</Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setIsLoggedIn(false)
-                          setIsMenuOpen(false)
-                        }}
-                      >
-                        Sign Out
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Theme toggle in mobile menu */}
-                <div className="mt-6 pt-6 border-t">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Theme</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                      className="flex items-center gap-2"
-                    >
-                      {theme === "dark" ? (
-                        <>
-                          <Sun className="h-4 w-4" />
-                          <span>Light</span>
-                        </>
-                      ) : (
-                        <>
-                          <Moon className="h-4 w-4" />
-                          <span>Dark</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </nav>
-            </SheetContent>
-          </Sheet>
+            ) : isMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+            <span className="sr-only">Menu</span>
+          </Button>
         </div>
       </div>
 
-      {/* Search - Full width when open on mobile */}
-      {isSearchOpen && (
-        <div className="absolute inset-x-0 top-16 bg-background border-b p-4 md:hidden">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="w-full pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
-            />
+      {/* Mobile menu */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t">
+          <div className="px-4 py-4 mobile-menu">
+            <nav className="flex flex-col space-y-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-primary",
+                    pathname === item.href ? "text-foreground font-semibold" : "text-foreground",
+                  )}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    className="text-sm font-medium transition-colors hover:text-primary text-foreground text-left"
+                    onClick={handleLogout}
+                  >
+                    <span className="flex items-center">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+
+              {mounted && (
+                <button
+                  className="text-sm font-medium transition-colors hover:text-primary text-foreground text-left flex items-center"
+                  onClick={() => {
+                    setTheme(theme === "dark" ? "light" : "dark")
+                  }}
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun className="mr-2 h-4 w-4" />
+                      Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="mr-2 h-4 w-4" />
+                      Dark Mode
+                    </>
+                  )}
+                </button>
+              )}
+            </nav>
           </div>
         </div>
       )}

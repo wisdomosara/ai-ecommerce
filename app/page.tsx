@@ -1,119 +1,102 @@
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowRight, ChevronRight } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
-import FeaturedProducts from "@/components/featured-products"
+import { Suspense } from "react"
 import HeroSection from "@/components/hero-section"
-import CategoryGrid from "@/components/category-grid"
-import CollectionShowcase from "@/components/collection-showcase"
 import NewArrivals from "@/components/new-arrivals"
+import DealsSection from "@/components/deals-section"
+import CollectionsShowcase from "@/components/collections-showcase"
+import CategoriesShowcase from "@/components/categories-showcase"
+import TrendingProducts from "@/components/trending-products"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-1">
-        <HeroSection />
+    <div className="flex flex-col gap-10 py-6 md:gap-16 md:py-10">
+      <HeroSection />
 
-        {/* Categories Section */}
-        <section className="py-12 px-4 md:px-6 lg:py-16">
-          <div className="md:container mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-bold tracking-tight">Shop by Category</h2>
-              <Link href="/categories" className="flex items-center text-sm font-medium text-primary">
-                View all categories <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
-            <CategoryGrid />
-          </div>
-        </section>
+      <section className="px-4 md:container">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">New Arrivals</h2>
+        </div>
+        <Suspense fallback={<ProductsSectionSkeleton />}>
+          <NewArrivals />
+        </Suspense>
+      </section>
 
-        {/* Featured Products */}
-        <section className="py-12 px-4 md:px-6 bg-muted/50">
-          <div className="md:container mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">Featured Products</h2>
-            <FeaturedProducts />
-          </div>
-        </section>
+      <section className="px-4 md:container">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Deals of the Week</h2>
+        </div>
+        <Suspense fallback={<ProductsSectionSkeleton />}>
+          <DealsSection />
+        </Suspense>
+      </section>
 
-        {/* Collections */}
-        <section className="py-12 px-4 md:px-6 lg:py-16">
-          <div className="md:container mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">Collections</h2>
-            <CollectionShowcase />
-          </div>
-        </section>
+      <section className="px-4 md:container">
+        <Suspense fallback={<CollectionsSkeleton />}>
+          <CollectionsShowcase title="Collections" navigationButtons={true} />
+        </Suspense>
+      </section>
 
-        {/* New Arrivals */}
-        <section className="py-12 px-4 md:px-6 bg-muted/50">
-          <div className="md:container mx-auto">
-            
-            <NewArrivals />
-          </div>
-        </section>
+      <section className="px-4 md:container">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Categories</h2>
+        </div>
+        <Suspense fallback={<CategoriesSkeleton />}>
+          <CategoriesShowcase />
+        </Suspense>
+      </section>
 
-        {/* Fix Summer Sale section for mobile */}
-        {/* Deals Section */}
-        <section className="py-12 px-4 md:px-6 lg:py-16">
-          <div className="md:container mx-auto">
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-rose-500 to-indigo-700 p-0 md:p-12">
-              <div className="grid gap-6 md:grid-cols-2 items-center">
-                <div className="text-white p-8 md:p-0">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Summer Sale</h2>
-                  <p className="text-lg md:text-xl mb-6 opacity-90">
-                    Get up to 50% off on selected items. Limited time offer.
-                  </p>
-                  <Button size="lg" variant="secondary" asChild>
-                    <Link href="/deals">Shop Now</Link>
-                  </Button>
-                </div>
-                <div className="flex justify-center w-full">
-                  <Image
-                    src="/placeholder.svg?height=300&width=300"
-                    alt="Summer Sale"
-                    width={300}
-                    height={300}
-                    className="object-cover w-full h-full md:rounded-lg md:shadow-lg"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+      <section className="px-4 md:container">
+        <Suspense fallback={<ProductsSectionSkeleton />}>
+          <TrendingProducts title="Trending Products" navigationButtons={true} />
+        </Suspense>
+      </section>
+    </div>
+  )
+}
 
-        {/* Newsletter */}
-        <section className="py-12 px-4 md:px-6 bg-muted">
-          <div className="md:container mx-auto">
-            <div className="max-w-xl mx-auto text-center">
-              <h3 className="text-2xl font-bold mb-4">Subscribe to our newsletter</h3>
-              <p className="text-muted-foreground mb-6">Stay updated with our latest offers and products</p>
-              <form className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                <Button type="submit">Subscribe</Button>
-              </form>
-            </div>
+function ProductsSectionSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {Array(4)
+        .fill(0)
+        .map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="h-[200px] w-full rounded-xl" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/4" />
           </div>
-        </section>
+        ))}
+    </div>
+  )
+}
 
-        {/* Become a Seller */}
-        <section className="py-12 px-4 md:px-6 bg-primary text-primary-foreground">
-          <div className="md:container mx-auto">
-            <div className="max-w-3xl mx-auto text-center">
-              <h3 className="text-2xl font-bold mb-4">Become a Seller on StyleStore</h3>
-              <p className="mb-6">
-                Join our marketplace and reach millions of customers. Start selling your products today.
-              </p>
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/sell">Apply Now</Link>
-              </Button>
-            </div>
+function CollectionsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array(3)
+        .fill(0)
+        .map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="h-[250px] w-full rounded-xl" />
+            <Skeleton className="h-5 w-1/2" />
           </div>
-        </section>
-      </main>
+        ))}
+    </div>
+  )
+}
+
+function CategoriesSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
+      {Array(6)
+        .fill(0)
+        .map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="h-[120px] w-full rounded-xl" />
+            <Skeleton className="h-4 w-2/3 mx-auto" />
+          </div>
+        ))}
     </div>
   )
 }
