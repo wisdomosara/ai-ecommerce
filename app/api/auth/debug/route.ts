@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   // Format the redirect URI the same way as in the Google auth route
   const redirectUri = vercelUrl.includes("localhost")
     ? `http://${vercelUrl}/api/auth/google`
-    : `https://${vercelUrl}/api/auth/google`;
+    : `${vercelUrl}/api/auth/google`;
 
   return NextResponse.json({
     message: "Auth debug information",
