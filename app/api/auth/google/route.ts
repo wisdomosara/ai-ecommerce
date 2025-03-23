@@ -5,18 +5,18 @@ import { OAuth2Client } from "google-auth-library";
 // Get environment variables with fallbacks
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const VERCEL_URL = process.env.VERCEL_URL || "localhost:3000";
+const NEXT_PUBLIC_VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000";
 
-// Use VERCEL_URL directly for the redirect URI
+// Use NEXT_PUBLIC_VERCEL_URL directly for the redirect URI
 // Add https:// prefix if not localhost
-const REDIRECT_URI = VERCEL_URL.includes("localhost")
-  ? `http://${VERCEL_URL}/api/auth/google`
-  : `https://${VERCEL_URL}/api/auth/google`;
+const REDIRECT_URI = NEXT_PUBLIC_VERCEL_URL.includes("localhost")
+  ? `http://${NEXT_PUBLIC_VERCEL_URL}/api/auth/google`
+  : `https://${NEXT_PUBLIC_VERCEL_URL}/api/auth/google`;
 
 export async function GET(request: NextRequest) {
   try {
     console.log("Google OAuth handler called");
-    console.log("Using redirect URI from VERCEL_URL:", REDIRECT_URI);
+    console.log("Using redirect URI from NEXT_PUBLIC_VERCEL_URL:", REDIRECT_URI);
 
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get("code");

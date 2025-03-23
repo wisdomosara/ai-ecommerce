@@ -26,7 +26,7 @@ export default function DebugPage() {
     setEnvVars({
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "Not set",
       hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
-      hasVercelUrl: !!process.env.VERCEL_URL,
+      hasVercelUrl: !!process.env.NEXT_PUBLIC_VERCEL_URL,
       nodeEnv: process.env.NODE_ENV,
       origin: typeof window !== "undefined" ? window.location.origin : "SSR",
     })

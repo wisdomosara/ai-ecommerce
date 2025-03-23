@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const vercelUrl = process.env.VERCEL_URL || "localhost:3000";
+  const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000";
 
   // Format the redirect URI the same way as in the Google auth route
   const redirectUri = vercelUrl.includes("localhost")
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     message: "Auth debug information",
     environment: {
       NODE_ENV: process.env.NODE_ENV,
-      VERCEL_URL: vercelUrl,
+      NEXT_PUBLIC_VERCEL_URL: vercelUrl,
     },
     redirectUri: redirectUri,
     googleConfig: {
