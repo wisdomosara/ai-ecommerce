@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ShoppingCart, User, Search, Menu, X, Sun, Moon, LogIn, UserPlus, LayoutDashboard, LogOut } from "lucide-react"
+import { ShoppingCart, User, Search, Menu, X, Sun, Moon, LogIn, UserPlus, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -13,6 +13,7 @@ import { useTheme } from "next-themes"
 import { useAuth } from "@/components/auth-provider"
 import { useCart } from "@/components/cart-provider"
 import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -123,7 +124,14 @@ export default function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
+                  {isAuthenticated && user?.image ? (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.image} alt={user.name} />
+                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
                   <span className="sr-only">User menu</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -131,9 +139,9 @@ export default function Navbar() {
                 {isAuthenticated ? (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="flex items-center">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Dashboard
+                      <Link href="/profile" className="flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        My Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>
@@ -183,10 +191,11 @@ export default function Navbar() {
 
           {/* Mobile menu button with avatar */}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isAuthenticated ? (
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                {user?.name?.charAt(0) || "U"}
-              </div>
+            {isAuthenticated && user?.image ? (
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user.image} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
             ) : isMenuOpen ? (
               <X className="h-5 w-5" />
             ) : (
@@ -219,11 +228,11 @@ export default function Navbar() {
               {isAuthenticated ? (
                 <>
                   <Link
-                    href="/dashboard"
+                    href="/profile"
                     className="text-sm font-medium transition-colors hover:text-primary text-foreground"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Dashboard
+                    My Profile
                   </Link>
                   <button
                     className="text-sm font-medium transition-colors hover:text-primary text-foreground text-left"

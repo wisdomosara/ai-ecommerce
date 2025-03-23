@@ -2,13 +2,14 @@
 
 import type React from "react";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/components/cart-provider";
+import { useAuth } from "@/components/auth-provider";
 import type { Product } from "@/lib/types";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
@@ -22,9 +23,18 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { isAuthenticated, user, toggleSavedItem } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
+
+  // Check if product is saved
+  useEffect(() => {
+    if (isAuthenticated && user?.savedItems) {
+      setIsSaved(user.savedItems.includes(product.id));
+    }
+  }, [isAuthenticated, user, product.id]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,11 +42,20 @@ export default function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
-  // const handleWishlist = (e: React.MouseEvent) => {
-  //   e.preventDefault()
-  //   e.stopPropagation()
-  //   // Add wishlist functionality
-  // }
+  const handleToggleSave = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isAuthenticated) {
+      toggleSavedItem(product.id);
+      setIsSaved(!isSaved);
+    } else {
+      // Redirect to login
+      window.location.href = `/login?redirectTo=${encodeURIComponent(
+        `/products/${product.id}`
+      )}`;
+    }
+  };
 
   return (
     <Link
@@ -145,15 +164,26 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.category}
           </p>
 
-          <div className="pt-2 flex justify-between items-center">
+          <div className="pt-2 flex justify-between items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
-              className="w-full"
+              className="flex-1"
               onClick={handleAddToCart}
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
               Add to Cart
+            </Button>
+            <Button
+              variant={isSaved ? "default" : "outline"}
+              size="icon"
+              className={`h-9 w-9 ${
+                isSaved ? "bg-primary/10 text-primary hover:bg-primary/20" : ""
+              }`}
+              onClick={handleToggleSave}
+            >
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-primary" : ""}`} />
+              <span className="sr-only">{isSaved ? "Unsave" : "Save"}</span>
             </Button>
           </div>
         </div>

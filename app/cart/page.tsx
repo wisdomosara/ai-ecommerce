@@ -3,18 +3,18 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Trash2, ArrowRight, LogIn, UserPlus } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Trash2, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCart } from "@/components/cart-provider"
 import { useAuth } from "@/components/auth-provider"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function CartPage() {
+  const router = useRouter()
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart()
   const { isAuthenticated } = useAuth()
   const [couponCode, setCouponCode] = useState("")
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
 
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
 
@@ -23,7 +23,8 @@ export default function CartPage() {
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      setShowLoginPrompt(true)
+      // Redirect to login with return URL
+      router.push(`/login?redirectTo=${encodeURIComponent("/cart")}`)
     } else {
       // Proceed with checkout
       console.log("Proceeding with checkout")
@@ -162,30 +163,6 @@ export default function CartPage() {
           </div>
         </div>
       )}
-
-      {/* Login/Signup Prompt Dialog */}
-      <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign in to continue</DialogTitle>
-            <DialogDescription>Please sign in or create an account to complete your purchase.</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-            <Button asChild className="w-full">
-              <Link href="/login" className="flex items-center justify-center">
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/register" className="flex items-center justify-center">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Create Account
-              </Link>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

@@ -1,63 +1,112 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Slider } from "@/components/ui/slider"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Slider } from "@/components/ui/slider"
 import { categories } from "@/lib/data"
 import { useMobile } from "@/hooks/use-mobile"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 interface ProductFiltersProps {
   onFilterChange?: (filters: any) => void
+  initialFilters?: any
+  onVisibilityChange?: (visible: boolean) => void
 }
 
-export default function ProductFilters({ onFilterChange }: ProductFiltersProps) {
+export default function ProductFilters({ onFilterChange, initialFilters, onVisibilityChange }: ProductFiltersProps) {
   const isMobile = useMobile()
-  const [priceRange, setPriceRange] = useState([0, 200])
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    initialFilters?.priceRange?.[0] || 0,
+    initialFilters?.priceRange?.[1] || 200,
+  ])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialFilters?.categories || [])
+  const [selectedRatings, setSelectedRatings] = useState<number[]>(initialFilters?.ratings || [])
+  const [sortOption, setSortOption] = useState(initialFilters?.sort || "relevance")
   const [showFilters, setShowFilters] = useState(!isMobile)
-  const [minPrice, setMinPrice] = useState(0)
-  const [maxPrice, setMaxPrice] = useState(200)
+  const [expandedItems, setExpandedItems] = useState<string[]>(["sort"])
+  const isInitialMount = useRef(true)
+  const debouncedUpdate = useRef<NodeJS.Timeout | null>(null)
 
-  // Update price range when min/max inputs change
+  // Update filters when props change
   useEffect(() => {
-    if (minPrice <= maxPrice) {
-      setPriceRange([minPrice, maxPrice])
+    if (initialFilters && !isInitialMount.current) {
+      setPriceRange([initialFilters.priceRange?.[0] || 0, initialFilters.priceRange?.[1] || 200])
+      setSelectedCategories(initialFilters.categories || [])
+      setSelectedRatings(initialFilters.ratings || [])
+      setSortOption(initialFilters.sort || "relevance")
+    }
+    isInitialMount.current = false
+  }, [initialFilters])
+
+  // Debounced filter update function
+  const updateFilters = () => {
+    if (debouncedUpdate.current) {
+      clearTimeout(debouncedUpdate.current)
+    }
+
+    debouncedUpdate.current = setTimeout(() => {
       if (onFilterChange) {
-        onFilterChange({ priceRange: [minPrice, maxPrice], categories: selectedCategories })
+        onFilterChange({
+          priceRange: priceRange,
+          categories: selectedCategories,
+          ratings: selectedRatings,
+          sort: sortOption,
+        })
+      }
+    }, 300) // 300ms debounce
+  }
+
+  // Call updateFilters when any filter changes
+  useEffect(() => {
+    if (!isInitialMount.current) {
+      updateFilters()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceRange, selectedCategories, selectedRatings, sortOption])
+
+  // Clean up the timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedUpdate.current) {
+        clearTimeout(debouncedUpdate.current)
       }
     }
-  }, [minPrice, maxPrice, selectedCategories])
+  }, [])
 
-  const handlePriceChange = (value: number[]) => {
-    setPriceRange(value)
-    setMinPrice(value[0])
-    setMaxPrice(value[1])
-    if (onFilterChange) {
-      onFilterChange({ priceRange: value, categories: selectedCategories })
+  const handleAccordionChange = (value: string) => {
+    if (expandedItems.includes(value)) {
+      setExpandedItems(expandedItems.filter((item) => item !== value))
+    } else {
+      setExpandedItems([...expandedItems, value])
     }
   }
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     const newCategories = checked ? [...selectedCategories, category] : selectedCategories.filter((c) => c !== category)
-
     setSelectedCategories(newCategories)
+  }
 
-    if (onFilterChange) {
-      onFilterChange({ priceRange, categories: newCategories })
-    }
+  const handleRatingChange = (rating: number, checked: boolean) => {
+    const newRatings = checked ? [...selectedRatings, rating] : selectedRatings.filter((r) => r !== rating)
+    setSelectedRatings(newRatings)
   }
 
   const clearFilters = () => {
     setPriceRange([0, 200])
-    setMinPrice(0)
-    setMaxPrice(200)
     setSelectedCategories([])
+    setSelectedRatings([])
+    setSortOption("relevance")
+  }
 
-    if (onFilterChange) {
-      onFilterChange({ priceRange: [0, 200], categories: [] })
+  const toggleShowFilters = (visible: boolean) => {
+    setShowFilters(visible)
+    if (onVisibilityChange) {
+      onVisibilityChange(visible)
     }
   }
 
@@ -70,81 +119,120 @@ export default function ProductFilters({ onFilterChange }: ProductFiltersProps) 
         </Button>
       </div>
 
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium">Price Range</h4>
-        <Slider
-          defaultValue={priceRange}
-          min={0}
-          max={200}
-          step={5}
-          value={priceRange}
-          onValueChange={handlePriceChange}
-          className="py-4"
-        />
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">$</span>
-            <input
-              type="number"
-              value={minPrice}
-              onChange={(e) => setMinPrice(Number(e.target.value))}
-              className="w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-              min={0}
-              max={maxPrice}
-            />
-          </div>
-          <span className="text-sm">-</span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm">$</span>
-            <input
-              type="number"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-              min={minPrice}
-              max={200}
-            />
-          </div>
-        </div>
-      </div>
+      <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="w-full">
+        <AccordionItem value="sort">
+          <AccordionTrigger className="text-sm font-medium">Sort By</AccordionTrigger>
+          <AccordionContent>
+            <RadioGroup value={sortOption} onValueChange={setSortOption} className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="relevance" id="sort-relevance" />
+                <Label htmlFor="sort-relevance">Relevance</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="price-low" id="sort-price-low" />
+                <Label htmlFor="sort-price-low">Price: Low to High</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="price-high" id="sort-price-high" />
+                <Label htmlFor="sort-price-high">Price: High to Low</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="rating" id="sort-rating" />
+                <Label htmlFor="sort-rating">Highest Rated</Label>
+              </div>
+            </RadioGroup>
+          </AccordionContent>
+        </AccordionItem>
 
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium">Categories</h4>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category.id} className="flex items-center space-x-2">
-              <Checkbox
-                id={`category-${category.id}`}
-                checked={selectedCategories.includes(category.slug)}
-                onCheckedChange={(checked) => handleCategoryChange(category.slug, checked as boolean)}
+        <AccordionItem value="price">
+          <AccordionTrigger className="text-sm font-medium">Price Range</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-6 px-1 py-2">
+              <Slider
+                defaultValue={priceRange}
+                min={0}
+                max={500}
+                step={5}
+                value={priceRange}
+                onValueChange={(value) => setPriceRange(value as [number, number])}
+                className="mt-6"
               />
-              <label
-                htmlFor={`category-${category.id}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {category.name}
-              </label>
+              <div className="flex items-center justify-between text-sm">
+                <div className="rounded-md border px-2 py-1">${priceRange[0]}</div>
+                <div className="rounded-md border px-2 py-1">${priceRange[1]}</div>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </AccordionContent>
+        </AccordionItem>
 
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium">Rating</h4>
-        <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <div key={rating} className="flex items-center space-x-2">
-              <Checkbox id={`rating-${rating}`} />
-              <label
-                htmlFor={`rating-${rating}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {rating} Stars & Above
-              </label>
+        <AccordionItem value="categories">
+          <AccordionTrigger className="text-sm font-medium">Categories</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2">
+              {categories.map((category) => (
+                <div key={category.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`category-${category.id}`}
+                    checked={selectedCategories.includes(category.slug)}
+                    onCheckedChange={(checked) => handleCategoryChange(category.slug, checked as boolean)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <label
+                    htmlFor={`category-${category.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCategoryChange(category.slug, !selectedCategories.includes(category.slug))
+                    }}
+                  >
+                    {category.name}
+                  </label>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="rating">
+          <AccordionTrigger className="text-sm font-medium">Rating</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2">
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <div key={rating} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`rating-${rating}`}
+                    checked={selectedRatings.includes(rating)}
+                    onCheckedChange={(checked) => handleRatingChange(rating, checked as boolean)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <label
+                    htmlFor={`rating-${rating}`}
+                    className="flex items-center text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleRatingChange(rating, !selectedRatings.includes(rating))
+                    }}
+                  >
+                    {Array(5)
+                      .fill(0)
+                      .map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`h-4 w-4 ${i < rating ? "fill-primary text-primary" : "fill-muted text-muted-foreground"}`}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                      ))}
+                    <span className="ml-1">{rating}+ Stars</span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   )
 
@@ -162,11 +250,11 @@ export default function ProductFilters({ onFilterChange }: ProductFiltersProps) 
               Filters
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[300px] sm:w-[400px] mobile-filter">
-            <SheetHeader>
+          <SheetContent side="bottom" className="h-[80vh] w-full p-0 mobile-filter">
+            <SheetHeader className="px-4 pt-4">
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
-            <div className="py-4">
+            <div className="overflow-y-auto h-full px-4 pb-20 pt-2">
               <FiltersContent />
             </div>
           </SheetContent>
@@ -176,19 +264,19 @@ export default function ProductFilters({ onFilterChange }: ProductFiltersProps) 
   }
 
   return (
-    <div className="w-full md:w-64 shrink-0">
+    <div className={`transition-all duration-300 ${showFilters ? "w-full md:w-64 shrink-0" : "w-auto"}`}>
       {showFilters ? (
         <div className="sticky top-20 space-y-6 rounded-lg border p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-medium">Filters</h3>
-            <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)} className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" onClick={() => toggleShowFilters(false)} className="h-8 w-8 p-0">
               <ChevronUp className="h-4 w-4" />
             </Button>
           </div>
           <FiltersContent />
         </div>
       ) : (
-        <Button variant="outline" onClick={() => setShowFilters(true)} className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => toggleShowFilters(true)} className="flex items-center gap-2">
           <SlidersHorizontal className="h-4 w-4" />
           <span>Show Filters</span>
           <ChevronDown className="h-4 w-4" />

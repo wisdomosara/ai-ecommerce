@@ -81,13 +81,13 @@
   display: none;
 }
 
-.swiper-pagination-bullet {
+.product-swiper .swiper-pagination-bullet {
+  background-color: theme("colors.primary.DEFAULT");
   opacity: 0.5;
 }
 
-.swiper-pagination-bullet-active {
+.product-swiper .swiper-pagination-bullet-active {
   opacity: 1;
-  background: white !important;
 }
 
 .product-detail-swiper {
@@ -130,7 +130,7 @@
 
 .thumbs-swiper .swiper-slide-thumb-active {
   opacity: 1;
-  border: 2px solid hsl(var(--primary));
+  border: 2px solid theme("colors.primary.DEFAULT");
 }
 
 .collections-swiper,

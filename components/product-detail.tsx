@@ -1,48 +1,98 @@
-"use client";
+"use client"
 
-import { useState, useRef } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  Star,
-  ShoppingCart,
-  Heart,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/components/cart-provider";
-import type { Product } from "@/lib/types";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Thumbs, FreeMode } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Star, ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { useCart } from "@/components/cart-provider"
+import { useAuth } from "@/components/auth-provider"
+import { getTrendingProducts } from "@/lib/data"
+import type { Product } from "@/lib/types"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Navigation, Pagination, Thumbs, FreeMode } from "swiper/modules"
+import type { Swiper as SwiperType } from "swiper"
+import "swiper/css"
+import "swiper/css/navigation"
+import "swiper/css/pagination"
+import "swiper/css/thumbs"
+import "swiper/css/free-mode"
+import ProductCard from "./product-card"
 
 interface ProductDetailProps {
-  product: Product;
+  product: Product
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
-  const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState(1);
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
-  const prevRef = useRef<HTMLButtonElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
+  const { addToCart } = useCart()
+  const { isAuthenticated, addToLastViewed, toggleSavedItem, user } = useAuth()
+  const [quantity, setQuantity] = useState(1)
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null)
+  const prevRef = useRef<HTMLButtonElement>(null)
+  const nextRef = useRef<HTMLButtonElement>(null)
+  const [isSaved, setIsSaved] = useState(false)
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([])
+  const [hasTrackedView, setHasTrackedView] = useState(false)
+
+  // Check if product is saved
+  useEffect(() => {
+    if (isAuthenticated && user?.savedItems) {
+      setIsSaved(user.savedItems.includes(product.id))
+    }
+  }, [isAuthenticated, user, product.id])
+
+  // Track viewed product - only once
+  useEffect(() => {
+    if (isAuthenticated && !hasTrackedView) {
+      addToLastViewed(product.id)
+      setHasTrackedView(true)
+    }
+  }, [isAuthenticated, product.id, addToLastViewed, hasTrackedView])
+
+  // Get recommended products - only once on mount
+  useEffect(() => {
+    // Get trending products excluding current product
+    const trending = getTrendingProducts().filter((p) => p.id !== product.id)
+
+    // Get products from same category
+    const sameCategory = trending.filter((p) => p.categorySlug === product.categorySlug)
+
+    // Prioritize same category products, then fill with other trending products
+    let recommended = [...sameCategory]
+
+    // If we don't have enough same category products, add other trending products
+    if (recommended.length < 4) {
+      const otherTrending = trending.filter((p) => p.categorySlug !== product.categorySlug)
+      recommended = [...recommended, ...otherTrending].slice(0, 4)
+    } else {
+      recommended = recommended.slice(0, 4)
+    }
+
+    setRecommendedProducts(recommended)
+  }, [product.id, product.categorySlug])
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+      addToCart(product)
     }
-  };
+  }
+
+  const handleToggleSave = () => {
+    if (isAuthenticated) {
+      toggleSavedItem(product.id)
+      setIsSaved(!isSaved)
+    } else {
+      // Redirect to login
+      window.location.href = `/login?redirectTo=${encodeURIComponent(`/products/${product.id}`)}`
+    }
+  }
 
   return (
     <div className="container py-10 px-4 md:px-6">
       <div className="grid gap-8 md:grid-cols-2">
         {/* Product Images */}
-        <div className="space-y-4 overflow-hidden">
+        <div className="space-y-4">
           <div className="relative overflow-hidden rounded-xl max-h-[500px] md:max-h-none">
             <Swiper
               modules={[Navigation, Pagination, Thumbs]}
@@ -52,18 +102,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               }}
               onBeforeInit={(swiper) => {
                 // @ts-ignore
-                swiper.params.navigation.prevEl = prevRef.current;
+                swiper.params.navigation.prevEl = prevRef.current
                 // @ts-ignore
-                swiper.params.navigation.nextEl = nextRef.current;
+                swiper.params.navigation.nextEl = nextRef.current
               }}
               pagination={{ clickable: true }}
               loop={true}
-              slidesPerGroup={1}
               thumbs={{ swiper: thumbsSwiper }}
               className="product-detail-swiper rounded-xl"
             >
               {product.images.map((image, index) => (
-                <SwiperSlide className="w-full" key={index}>
+                <SwiperSlide key={index}>
                   <div className="aspect-square w-full">
                     <Image
                       src={image || "/placeholder.svg"}
@@ -76,15 +125,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 </SwiperSlide>
               ))}
 
-              {product.isNew && (
-                <Badge className="absolute left-4 top-4 z-10">New</Badge>
-              )}
+              {product.isNew && <Badge className="absolute left-4 top-4 z-10">New</Badge>}
 
               {product.discount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute right-4 top-4 z-10"
-                >
+                <Badge variant="destructive" className="absolute right-4 top-4 z-10">
                   {product.discount}% OFF
                 </Badge>
               )}
@@ -158,24 +202,16 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                     />
                   ))}
               </div>
-              <span className="text-sm text-muted-foreground">
-                {product.rating.toFixed(1)} rating
-              </span>
+              <span className="text-sm text-muted-foreground">{product.rating.toFixed(1)} rating</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <p className="text-2xl md:text-3xl font-bold">
-              ${product.price.toFixed(2)}
-            </p>
+            <p className="text-2xl md:text-3xl font-bold">${product.price.toFixed(2)}</p>
             {product.originalPrice && (
-              <p className="text-lg text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
-              </p>
+              <p className="text-lg text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</p>
             )}
-            {product.discount > 0 && (
-              <Badge variant="destructive">{product.discount}% OFF</Badge>
-            )}
+            {product.discount > 0 && <Badge variant="destructive">{product.discount}% OFF</Badge>}
           </div>
 
           <p className="text-muted-foreground">{product.description}</p>
@@ -217,35 +253,44 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() =>
-                  setQuantity((q) => Math.min(product.stock, q + 1))
-                }
+                onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
                 disabled={quantity >= product.stock}
               >
                 +
               </Button>
-              <span className="ml-4 text-sm text-muted-foreground">
-                {product.stock} in stock
-              </span>
+              <span className="ml-4 text-sm text-muted-foreground">{product.stock} in stock</span>
             </div>
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Button
-              size="lg"
-              className="flex-1 min-h-[44px]"
-              onClick={handleAddToCart}
-            >
+            <Button size="lg" className="flex-1" onClick={handleAddToCart}>
               <ShoppingCart className="mr-2 h-5 w-5" />
               Add to Cart
             </Button>
-            <Button variant="outline" size="lg">
-              <Heart className="mr-2 h-5 w-5" />
-              Add to Wishlist
+            <Button
+              variant={isSaved ? "default" : "outline"}
+              size="lg"
+              onClick={handleToggleSave}
+              className={isSaved ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
+            >
+              <Heart className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary" : ""}`} />
+              {isSaved ? "Saved" : "Save Item"}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Recommended Products */}
+      {recommendedProducts.length > 0 && (
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {recommendedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }

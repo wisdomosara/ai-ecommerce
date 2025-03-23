@@ -1,4 +1,4 @@
-import type { Product, Category, Collection } from "./types"
+import type { Product, Category, Collection } from "./types";
 
 // Mock Categories
 export const categories: Category[] = [
@@ -6,7 +6,8 @@ export const categories: Category[] = [
     id: "1",
     name: "Electronics",
     slug: "electronics",
-    image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=2070&auto=format&fit=crop",
     description: "Latest gadgets and electronic devices",
     productCount: 42,
   },
@@ -14,7 +15,8 @@ export const categories: Category[] = [
     id: "2",
     name: "Clothing",
     slug: "clothing",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
     description: "Fashion and apparel for all seasons",
     productCount: 56,
   },
@@ -22,7 +24,8 @@ export const categories: Category[] = [
     id: "3",
     name: "Home & Kitchen",
     slug: "home-kitchen",
-    image: "https://images.unsplash.com/photo-1556911220-bda9f7f7597e?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1556911220-bda9f7f7597e?q=80&w=2070&auto=format&fit=crop",
     description: "Everything for your home",
     productCount: 38,
   },
@@ -30,7 +33,8 @@ export const categories: Category[] = [
     id: "4",
     name: "Beauty",
     slug: "beauty",
-    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2070&auto=format&fit=crop",
     description: "Skincare, makeup, and beauty products",
     productCount: 29,
   },
@@ -38,7 +42,8 @@ export const categories: Category[] = [
     id: "5",
     name: "Sports",
     slug: "sports",
-    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=2070&auto=format&fit=crop",
     description: "Sports equipment and activewear",
     productCount: 31,
   },
@@ -46,11 +51,12 @@ export const categories: Category[] = [
     id: "6",
     name: "Books",
     slug: "books",
-    image: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=2070&auto=format&fit=crop",
     description: "Books across all genres",
     productCount: 45,
   },
-]
+];
 
 // Mock Collections
 export const collections: Collection[] = [
@@ -58,7 +64,8 @@ export const collections: Collection[] = [
     id: "1",
     name: "Summer Essentials",
     slug: "summer-essentials",
-    image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=2070&auto=format&fit=crop",
     description: "Everything you need for the summer season",
     productCount: 24,
   },
@@ -66,7 +73,8 @@ export const collections: Collection[] = [
     id: "2",
     name: "Work From Home",
     slug: "work-from-home",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2072&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2072&auto=format&fit=crop",
     description: "Boost your productivity with these essentials",
     productCount: 18,
   },
@@ -74,7 +82,8 @@ export const collections: Collection[] = [
     id: "3",
     name: "Fitness Collection",
     slug: "fitness-collection",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop",
     description: "Stay fit and healthy with our fitness collection",
     productCount: 15,
   },
@@ -82,7 +91,8 @@ export const collections: Collection[] = [
     id: "4",
     name: "Winter Wear",
     slug: "winter-wear",
-    image: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?q=80&w=2070&auto=format&fit=crop",
     description: "Stay warm and stylish this winter",
     productCount: 22,
   },
@@ -90,7 +100,8 @@ export const collections: Collection[] = [
     id: "5",
     name: "Smart Home",
     slug: "smart-home",
-    image: "https://images.unsplash.com/photo-1558002038-1055e2e28ed1?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1558002038-1055e2e28ed1?q=80&w=2070&auto=format&fit=crop",
     description: "Transform your home with smart technology",
     productCount: 19,
   },
@@ -98,11 +109,12 @@ export const collections: Collection[] = [
     id: "6",
     name: "Outdoor Adventure",
     slug: "outdoor-adventure",
-    image: "https://images.unsplash.com/photo-1551632811-561732d1e306?q=80&w=2070&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1551632811-561732d1e306?q=80&w=2070&auto=format&fit=crop",
     description: "Gear up for your next outdoor adventure",
     productCount: 27,
   },
-]
+];
 
 // Mock Products
 export const products: Product[] = [
@@ -221,7 +233,9 @@ export const products: Product[] = [
     price: 14.99,
     originalPrice: undefined,
     discount: 0,
-    images: ["https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1974&auto=format&fit=crop"],
+    images: [
+      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1974&auto=format&fit=crop",
+    ],
     category: "Books",
     categorySlug: "books",
     isNew: true,
@@ -354,43 +368,44 @@ export const products: Product[] = [
     rating: 4.8,
     stock: 20,
   },
-]
+];
 
 // Helper functions to get data
 export function getNewArrivals(): Product[] {
-  return products.filter((product) => product.isNew).slice(0, 4)
+  return products.filter((product) => product.isNew).slice(0, 4);
 }
 
 export function getDeals(): Product[] {
   return products
     .filter((product) => product.discount > 0)
     .sort((a, b) => b.discount - a.discount)
-    .slice(0, 4)
+    .slice(0, 4);
 }
 
 export function getTrendingProducts(): Product[] {
-  return products.filter((product) => product.isFeatured)
+  return products.filter((product) => product.isFeatured);
 }
 
 export function getProductsByCategory(categorySlug: string): Product[] {
-  return products.filter((product) => product.categorySlug === categorySlug)
+  return products.filter((product) => product.categorySlug === categorySlug);
 }
 
 export function getProductsByCollection(collectionSlug: string): Product[] {
-  return products.filter((product) => product.collectionSlug === collectionSlug)
+  return products.filter(
+    (product) => product.collectionSlug === collectionSlug
+  );
 }
 
 export function getProductById(id: string): Product | undefined {
-  return products.find((product) => product.id === id)
+  return products.find((product) => product.id === id);
 }
 
 export function searchProducts(query: string): Product[] {
-  const lowercaseQuery = query.toLowerCase()
+  const lowercaseQuery = query.toLowerCase();
   return products.filter(
     (product) =>
       product.name.toLowerCase().includes(lowercaseQuery) ||
       product.description.toLowerCase().includes(lowercaseQuery) ||
-      product.category.toLowerCase().includes(lowercaseQuery),
-  )
+      product.category.toLowerCase().includes(lowercaseQuery)
+  );
 }
-

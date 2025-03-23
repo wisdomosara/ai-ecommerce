@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from "@/components/navbar"
 import { CartProvider } from "@/components/cart-provider"
 import { AuthProvider } from "@/components/auth-provider"
+import AuthDebug from "@/components/auth-debug"
 import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
   },
   description: "A modern e-commerce platform with a wide range of products",
   metadataBase: new URL("https://shophub.example.com"),
+    generator: 'v0.dev'
 }
 
 export const viewport: Viewport = {
@@ -52,6 +54,8 @@ export default function RootLayout({
                     </p>
                   </div>
                 </footer>
+                {/* Add the debug component */}
+                <AuthDebug />
               </div>
             </CartProvider>
           </AuthProvider>
@@ -75,3 +79,6 @@ export default function RootLayout({
   )
 }
 
+
+
+import './globals.css'
