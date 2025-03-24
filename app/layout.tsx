@@ -6,8 +6,6 @@ import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from "@/components/navbar"
 import { CartProvider } from "@/components/cart-provider"
 import { AuthProvider } from "@/components/auth-provider"
-import AuthDebug from "@/components/auth-debug"
-import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,7 +16,6 @@ export const metadata: Metadata = {
   },
   description: "A modern e-commerce platform with a wide range of products",
   metadataBase: new URL("https://shophub.example.com"),
-    generator: 'v0.dev'
 }
 
 export const viewport: Viewport = {
@@ -30,6 +27,7 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+// Ensure the main container has consistent padding
 export default function RootLayout({
   children,
 }: {
@@ -37,48 +35,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <CartProvider>
               <div className="flex min-h-screen flex-col">
                 <Navbar />
-                <main className="flex-1">{children}</main>
+                <main className="flex-1">
+                  <div className="mx-auto max-w-[1536px] w-full">{children}</div>
+                </main>
                 <footer className="border-t py-6 md:py-8">
-                  <div className="container flex flex-col items-center justify-between gap-4 px-4 md:px-6 md:flex-row">
+                  <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
                     <p className="text-center text-sm text-muted-foreground md:text-left">
                       &copy; {new Date().getFullYear()} ShopHub. All rights reserved.
                     </p>
                   </div>
                 </footer>
-                {/* Add the debug component */}
-                <AuthDebug />
               </div>
             </CartProvider>
           </AuthProvider>
         </ThemeProvider>
-
-        {/* Add script to fix theme toggle */}
-        <Script id="theme-toggle-fix" strategy="afterInteractive">
-          {`
-            (function() {
-              // On page load or when changing themes, best to add inline in \`head\` to avoid FOUC
-              if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
-              } else {
-                document.documentElement.classList.remove('dark')
-              }
-            })()
-          `}
-        </Script>
       </body>
     </html>
   )
 }
 
-
-
-import './globals.css'

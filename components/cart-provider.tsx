@@ -66,7 +66,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setCartItems([])
+    localStorage.removeItem("cart")
   }
+
+  // Add an event listener for the logout event
+  useEffect(() => {
+    const handleUserLogout = () => {
+      clearCart()
+    }
+
+    window.addEventListener("user-logout", handleUserLogout)
+
+    return () => {
+      window.removeEventListener("user-logout", handleUserLogout)
+    }
+  }, [])
 
   return (
     <CartContext.Provider

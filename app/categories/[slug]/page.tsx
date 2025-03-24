@@ -11,8 +11,8 @@ interface CategoryPageProps {
 }
 
 export async function generateMetadata({ params }: CategoryPageProps) {
-  const { slug } = await params
-  const category = categories.find((c) => c.slug === slug)
+  const resolvedParams = await params
+  const category = categories.find((c) => c.slug === resolvedParams.slug)
 
   if (!category) {
     return {
@@ -28,22 +28,22 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { slug } = await params
-  const category = categories.find((c) => c.slug === slug)
+  const resolvedParams = await params
+  const category = categories.find((c) => c.slug === resolvedParams.slug)
 
   if (!category) {
     notFound()
   }
 
-  const products = getProductsByCategory(slug)
+  const products = getProductsByCategory(resolvedParams.slug)
 
   return (
-    <div className="container py-10 px-4 md:px-6">
+    <div className="container py-10">
       <h1 className="mb-2 text-3xl font-bold tracking-tight">{category.name}</h1>
       <p className="mb-8 text-muted-foreground">{category.description}</p>
 
       <Suspense fallback={<ProductsGridSkeleton />}>
-        <CategoryResults products={products} />
+        <CategoryResults products={products} categorySlug={resolvedParams.slug} />
       </Suspense>
     </div>
   )

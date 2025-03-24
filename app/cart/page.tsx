@@ -27,7 +27,7 @@ export default function CartPage() {
       router.push(`/login?redirectTo=${encodeURIComponent("/cart")}`)
     } else {
       // Proceed with checkout
-      console.log("Proceeding with checkout")
+      router.push("/checkout")
     }
   }
 

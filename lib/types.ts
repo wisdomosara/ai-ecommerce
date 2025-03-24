@@ -3,7 +3,7 @@ export interface Product {
   name: string
   description: string
   price: number
-  originalPrice?: number
+  originalPrice?: number | undefined
   discount: number
   images: string[]
   category: string
@@ -32,5 +32,42 @@ export interface Collection {
   image: string
   description: string
   productCount: number
+}
+
+export interface CartItem extends Product {
+  quantity: number
+}
+
+export interface ShippingAddress {
+  fullName: string
+  addressLine1: string
+  addressLine2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  phone: string
+}
+
+export interface PaymentMethod {
+  cardNumber: string
+  nameOnCard: string
+  expiryDate: string
+  cvv: string
+}
+
+export interface Order {
+  id: string
+  userId: string
+  items: CartItem[]
+  shippingAddress: ShippingAddress
+  paymentMethod: PaymentMethod
+  subtotal: number
+  shipping: number
+  tax: number
+  total: number
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
+  createdAt: string
+  updatedAt: string
 }
 

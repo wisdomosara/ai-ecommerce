@@ -11,8 +11,8 @@ interface CollectionPageProps {
 }
 
 export async function generateMetadata({ params }: CollectionPageProps) {
-  const { slug } = await params
-  const collection = collections.find((c) => c.slug === slug)
+  const resolvedParams = await params
+  const collection = collections.find((c) => c.slug === resolvedParams.slug)
 
   if (!collection) {
     return {
@@ -27,15 +27,31 @@ export async function generateMetadata({ params }: CollectionPageProps) {
   }
 }
 
+function ProductsGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="space-y-3">
+          <Skeleton className="aspect-square w-full rounded-md" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default async function CollectionPage({ params }: CollectionPageProps) {
-  const { slug } = await params
-  const collection = collections.find((c) => c.slug === slug)
+  const resolvedParams = await params
+  const collection = collections.find((c) => c.slug === resolvedParams.slug)
 
   if (!collection) {
     notFound()
   }
 
-  const products = getProductsByCollection(slug)
+  const products = getProductsByCollection(resolvedParams.slug)
 
   return (
     <div className="container py-10">
@@ -53,22 +69,6 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
           <p className="py-12 text-center text-muted-foreground">No products found in this collection.</p>
         )}
       </Suspense>
-    </div>
-  )
-}
-
-function ProductsGridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {Array(8)
-        .fill(0)
-        .map((_, i) => (
-          <div key={i} className="space-y-3">
-            <Skeleton className="aspect-square w-full rounded-xl" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        ))}
     </div>
   )
 }

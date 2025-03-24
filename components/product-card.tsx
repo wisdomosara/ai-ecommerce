@@ -1,61 +1,59 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { ShoppingCart, ChevronLeft, ChevronRight, Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/components/cart-provider";
-import { useAuth } from "@/components/auth-provider";
-import type { Product } from "@/lib/types";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { ShoppingCart, ChevronLeft, ChevronRight, Heart } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { useCart } from "@/components/cart-provider"
+import { useAuth } from "@/components/auth-provider"
+import type { Product } from "@/lib/types"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Navigation, Pagination } from "swiper/modules"
+import "swiper/css"
+import "swiper/css/navigation"
+import "swiper/css/pagination"
 
 interface ProductCardProps {
-  product: Product;
+  product: Product
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart();
-  const { isAuthenticated, user, toggleSavedItem } = useAuth();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const prevRef = useRef<HTMLButtonElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
+  const { addToCart } = useCart()
+  const { isAuthenticated, user, toggleSavedItem } = useAuth()
+  const [isHovered, setIsHovered] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+  const prevRef = useRef<HTMLButtonElement>(null)
+  const nextRef = useRef<HTMLButtonElement>(null)
 
   // Check if product is saved
   useEffect(() => {
     if (isAuthenticated && user?.savedItems) {
-      setIsSaved(user.savedItems.includes(product.id));
+      setIsSaved(user.savedItems.includes(product.id))
     }
-  }, [isAuthenticated, user, product.id]);
+  }, [isAuthenticated, user, product.id])
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    addToCart(product)
+  }
 
   const handleToggleSave = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
     if (isAuthenticated) {
-      toggleSavedItem(product.id);
-      setIsSaved(!isSaved);
+      toggleSavedItem(product.id)
+      setIsSaved(!isSaved)
     } else {
       // Redirect to login
-      window.location.href = `/login?redirectTo=${encodeURIComponent(
-        `/products/${product.id}`
-      )}`;
+      window.location.href = `/login?redirectTo=${encodeURIComponent(`/products/${product.id}`)}`
     }
-  };
+  }
 
   return (
     <Link
@@ -65,9 +63,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative overflow-hidden rounded-xl border border-border transition-all duration-300 hover:shadow-md">
-        <div className="aspect-square w-full overflow-hidden rounded-lg max-h-[300px] md:max-h-none">
+        <div className="aspect-square w-full h-full overflow-hidden rounded-lg">
           {product.images.length > 1 ? (
-            <div className="relative h-full w-full">
+            <div className="relative h-full w-full overflow-hidden">
               <Swiper
                 modules={[Navigation, Pagination]}
                 navigation={{
@@ -76,9 +74,9 @@ export default function ProductCard({ product }: ProductCardProps) {
                 }}
                 onBeforeInit={(swiper) => {
                   // @ts-ignore
-                  swiper.params.navigation.prevEl = prevRef.current;
+                  swiper.params.navigation.prevEl = prevRef.current
                   // @ts-ignore
-                  swiper.params.navigation.nextEl = nextRef.current;
+                  swiper.params.navigation.nextEl = nextRef.current
                 }}
                 pagination={{ clickable: true }}
                 loop={true}
@@ -100,12 +98,10 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`absolute left-2 top-1/2 z-10 -translate-y-1/2 h-7 w-7 rounded-full bg-background/80 opacity-0 transition-opacity ${
-                  isHovered ? "opacity-100" : ""
-                }`}
+                className={`absolute left-2 top-1/2 z-10 -translate-y-1/2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm opacity-0 transition-opacity ${isHovered ? "opacity-100" : ""}`}
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  e.preventDefault()
+                  e.stopPropagation()
                 }}
                 ref={prevRef}
               >
@@ -116,12 +112,10 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`absolute right-2 top-1/2 z-10 -translate-y-1/2 h-7 w-7 rounded-full bg-background/80 opacity-0 transition-opacity ${
-                  isHovered ? "opacity-100" : ""
-                }`}
+                className={`absolute right-2 top-1/2 z-10 -translate-y-1/2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm opacity-0 transition-opacity ${isHovered ? "opacity-100" : ""}`}
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  e.preventDefault()
+                  e.stopPropagation()
                 }}
                 ref={nextRef}
               >
@@ -140,46 +134,31 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <div className="absolute right-4 top-4 flex flex-col gap-2">
-          {product.isNew && (
-            <Badge className="bg-primary text-primary-foreground">New</Badge>
-          )}
+        <div className="absolute right-4 top-4 flex flex-col gap-2 z-20">
+          {product.isNew && <Badge className="bg-primary text-primary-foreground">New</Badge>}
 
-          {product.discount > 0 && (
-            <Badge variant="destructive">{product.discount}% OFF</Badge>
-          )}
+          {product.discount > 0 && <Badge variant="destructive">{product.discount}% OFF</Badge>}
         </div>
 
         <div className="p-3 space-y-1">
           <h3 className="font-medium line-clamp-1">{product.name}</h3>
           <div className="flex items-center gap-2">
             <p className="font-semibold">${product.price.toFixed(2)}</p>
-            {product.originalPrice && (
-              <p className="text-sm text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
-              </p>
+            {product.originalPrice !== undefined && (
+              <p className="text-sm text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</p>
             )}
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-1">
-            {product.category}
-          </p>
+          <p className="text-sm text-muted-foreground line-clamp-1">{product.category}</p>
 
           <div className="pt-2 flex justify-between items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="flex-1"
-              onClick={handleAddToCart}
-            >
+            <Button variant="secondary" size="sm" className="flex-1" onClick={handleAddToCart}>
               <ShoppingCart className="mr-2 h-4 w-4" />
               Add to Cart
             </Button>
             <Button
               variant={isSaved ? "default" : "outline"}
               size="icon"
-              className={`h-9 w-9 ${
-                isSaved ? "bg-primary/10 text-primary hover:bg-primary/20" : ""
-              }`}
+              className="h-9 w-9"
               onClick={handleToggleSave}
             >
               <Heart className={`h-4 w-4 ${isSaved ? "fill-primary" : ""}`} />
@@ -189,5 +168,6 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
     </Link>
-  );
+  )
 }
+

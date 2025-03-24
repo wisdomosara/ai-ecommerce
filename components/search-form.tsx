@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -17,12 +17,32 @@ export default function SearchForm({ initialQuery = "" }: SearchFormProps) {
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [isSearching, setIsSearching] = useState(false)
 
+  useEffect(() => {
+    return () => {
+      setIsSearching(false)
+    }
+  }, [])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       setIsSearching(true)
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-      // We don't need to set isSearching to false here as the page will reload
+
+      // Get the current path
+      const currentPath = window.location.pathname
+
+      if (currentPath === "/search") {
+        // If already on search page, use router.replace to update the URL without adding to history
+        router.replace(`/search?q=${encodeURIComponent(searchQuery)}`)
+      } else {
+        // If not on search page, use router.push to navigate to search page
+        router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+      }
+
+      // Reset isSearching after a short delay to ensure the UI updates
+      setTimeout(() => {
+        setIsSearching(false)
+      }, 500)
     }
   }
 

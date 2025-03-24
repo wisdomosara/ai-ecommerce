@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ShoppingCart, User, Search, Menu, X, Sun, Moon, LogIn, UserPlus, LogOut } from "lucide-react"
+import { ShoppingCart, User, Search, Menu, X, Sun, Moon, LogIn, UserPlus, LogOut, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -22,6 +22,7 @@ export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth()
   const { cartItems } = useCart()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuClosing, setIsMenuClosing] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [mounted, setMounted] = useState(false)
 
@@ -33,15 +34,30 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-      setIsMenuOpen(false)
+      // Check if we're already on the search page
+      if (pathname === "/search") {
+        // If already on search page, use router.replace to update the URL without adding to history
+        router.replace(`/search?q=${encodeURIComponent(searchQuery)}`)
+      } else {
+        // If not on search page, use router.push to navigate to search page
+        router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+      }
+      closeMenu()
     }
   }
 
   const handleLogout = () => {
     logout()
-    setIsMenuOpen(false)
+    closeMenu()
     router.push("/")
+  }
+
+  const closeMenu = () => {
+    setIsMenuClosing(true)
+    setTimeout(() => {
+      setIsMenuOpen(false)
+      setIsMenuClosing(false)
+    }, 300) // Match animation duration
   }
 
   const navItems = [
@@ -52,7 +68,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center px-4 md:px-6">
+      <div className="container flex h-16 items-center">
         <div className="flex items-center">
           <Link href="/" className="mr-2 md:mr-6 flex items-center space-x-2">
             <span className="font-bold text-xl">ShopHub</span>
@@ -107,8 +123,13 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-2 ml-auto">
-          <Link href="/cart">
-            <Button variant="ghost" size="icon" className="relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative bg-background/0 hover:bg-background/80 dark:hover:bg-white/20"
+            asChild
+          >
+            <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
               {cartItems.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
@@ -116,14 +137,18 @@ export default function Navbar() {
                 </span>
               )}
               <span className="sr-only">Cart</span>
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           {/* Desktop user menu */}
           <div className="hidden md:block">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="bg-background/0 hover:bg-background/80 dark:hover:bg-white/20"
+                >
                   {isAuthenticated && user?.image ? (
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.image} alt={user.name} />
@@ -142,6 +167,12 @@ export default function Navbar() {
                       <Link href="/profile" className="flex items-center">
                         <User className="mr-2 h-4 w-4" />
                         My Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/orders" className="flex items-center">
+                        <Package className="mr-2 h-4 w-4" />
+                        My Orders
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>
@@ -169,7 +200,15 @@ export default function Navbar() {
                   <DropdownMenuItem
                     onSelect={(e) => {
                       e.preventDefault()
-                      setTheme(theme === "dark" ? "light" : "dark")
+                      const newTheme = theme === "dark" ? "light" : "dark"
+                      setTheme(newTheme)
+
+                      // Manually update the class to avoid flash on next page load
+                      if (newTheme === "dark") {
+                        document.documentElement.classList.add("dark")
+                      } else {
+                        document.documentElement.classList.remove("dark")
+                      }
                     }}
                   >
                     {theme === "dark" ? (
@@ -207,19 +246,31 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t">
-          <div className="px-4 py-4 mobile-menu">
-            <nav className="flex flex-col space-y-4">
+      {(isMenuOpen || isMenuClosing) && (
+        <div className="fixed inset-0 z-50 md:hidden h-screen bg-background/95 backdrop-blur-sm">
+          <div
+            className="fixed inset-0 bg-background flex flex-col"
+            style={{
+              animation: isMenuClosing ? "slideOutRight 0.3s ease-out forwards" : "slideInRight 0.3s ease-out forwards",
+            }}
+          >
+            <div className="flex items-center justify-between p-6 border-b">
+              <span className="font-bold text-xl">Menu</span>
+              <Button variant="ghost" size="icon" onClick={closeMenu} className="absolute right-4 top-4">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <nav className="flex flex-col space-y-6 p-6 pt-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-foreground font-semibold" : "text-foreground",
+                    "text-base font-medium transition-colors hover:text-primary flex items-center",
+                    pathname === item.href ? "text-primary font-semibold" : "text-foreground",
                   )}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                 >
                   {item.name}
                 </Link>
@@ -229,35 +280,44 @@ export default function Navbar() {
                 <>
                   <Link
                     href="/profile"
-                    className="text-sm font-medium transition-colors hover:text-primary text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="text-base font-medium transition-colors hover:text-primary flex items-center"
+                    onClick={closeMenu}
                   >
+                    <User className="mr-3 h-5 w-5" />
                     My Profile
                   </Link>
+                  <Link
+                    href="/orders"
+                    className="text-base font-medium transition-colors hover:text-primary flex items-center"
+                    onClick={closeMenu}
+                  >
+                    <Package className="mr-3 h-5 w-5" />
+                    My Orders
+                  </Link>
                   <button
-                    className="text-sm font-medium transition-colors hover:text-primary text-foreground text-left"
+                    className="text-base font-medium transition-colors hover:text-primary text-left flex items-center"
                     onClick={handleLogout}
                   >
-                    <span className="flex items-center">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </span>
+                    <LogOut className="mr-3 h-5 w-5" />
+                    Logout
                   </button>
                 </>
               ) : (
                 <>
                   <Link
                     href="/login"
-                    className="text-sm font-medium transition-colors hover:text-primary text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="text-base font-medium transition-colors hover:text-primary flex items-center"
+                    onClick={closeMenu}
                   >
+                    <LogIn className="mr-3 h-5 w-5" />
                     Login
                   </Link>
                   <Link
                     href="/register"
-                    className="text-sm font-medium transition-colors hover:text-primary text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="text-base font-medium transition-colors hover:text-primary flex items-center"
+                    onClick={closeMenu}
                   >
+                    <UserPlus className="mr-3 h-5 w-5" />
                     Register
                   </Link>
                 </>
@@ -265,19 +325,29 @@ export default function Navbar() {
 
               {mounted && (
                 <button
-                  className="text-sm font-medium transition-colors hover:text-primary text-foreground text-left flex items-center"
+                  className="text-base font-medium transition-colors hover:text-primary text-left flex items-center"
                   onClick={() => {
-                    setTheme(theme === "dark" ? "light" : "dark")
+                    const newTheme = theme === "dark" ? "light" : "dark"
+                    setTheme(newTheme)
+
+                    // Manually update the class to avoid flash on next page load
+                    if (newTheme === "dark") {
+                      document.documentElement.classList.add("dark")
+                    } else {
+                      document.documentElement.classList.remove("dark")
+                    }
+
+                    closeMenu()
                   }}
                 >
                   {theme === "dark" ? (
                     <>
-                      <Sun className="mr-2 h-4 w-4" />
+                      <Sun className="mr-3 h-5 w-5" />
                       Light Mode
                     </>
                   ) : (
                     <>
-                      <Moon className="mr-2 h-4 w-4" />
+                      <Moon className="mr-3 h-5 w-5" />
                       Dark Mode
                     </>
                   )}

@@ -25,11 +25,21 @@ export default function CollectionsShowcase({ title, navigationButtons = false }
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" ref={navigationPrevRef}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
+              ref={navigationPrevRef}
+            >
               <ChevronLeft className="h-4 w-4" />
               <span className="sr-only">Previous</span>
             </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" ref={navigationNextRef}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
+              ref={navigationNextRef}
+            >
               <ChevronRight className="h-4 w-4" />
               <span className="sr-only">Next</span>
             </Button>
@@ -59,10 +69,13 @@ export default function CollectionsShowcase({ title, navigationButtons = false }
             slidesPerView: 3,
           },
         }}
-        className="collections-swiper"
+        className="collections-swiper h-full"
+        grabCursor={true}
+        touchEventsTarget="container"
+        threshold={5}
       >
         {collections.map((collection) => (
-          <SwiperSlide key={collection.id}>
+          <SwiperSlide key={collection.id} className="h-full">
             <CollectionCard collection={collection} />
           </SwiperSlide>
         ))}

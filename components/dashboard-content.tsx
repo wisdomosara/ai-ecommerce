@@ -44,7 +44,7 @@ export default function DashboardContent() {
   }
 
   return (
-    <div className="container py-10 px-4 md:px-6">
+    <div className="container py-10">
       {isMobile && (
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -202,8 +202,8 @@ export default function DashboardContent() {
                     <CardTitle>Sales Overview</CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2">
-                    <div className="h-[200px] w-full bg-muted/20 flex items-center justify-center">
-                      <BarChart3 className="h-16 w-16 text-muted" />
+                    <div className="h-[200px] w-full bg-muted flex items-center justify-center">
+                      <BarChart3 className="h-16 w-16 text-muted-foreground" />
                     </div>
                   </CardContent>
                 </Card>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import ProductCard from "@/components/product-card"
 import ProductFilters from "@/components/product-filters"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -21,6 +21,20 @@ export default function SearchResults({ initialProducts, searchQuery }: SearchRe
     sort: "relevance",
   })
   const [showFilters, setShowFilters] = useState(true)
+
+  // Add this useEffect to update products when searchQuery changes
+  useEffect(() => {
+    if (searchQuery !== "") {
+      // Reset filters when search query changes
+      setFilters({
+        priceRange: [0, 200],
+        categories: [],
+        ratings: [],
+        sort: "relevance",
+      })
+      setFilteredProducts(initialProducts)
+    }
+  }, [searchQuery, initialProducts])
 
   // Handle filter changes from the ProductFilters component
   const handleFilterChange = (newFilters: any) => {

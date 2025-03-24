@@ -185,7 +185,7 @@
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(100%);
   }
   to {
     opacity: 1;
@@ -193,10 +193,21 @@
   }
 }
 
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
 @keyframes slideInLeft {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-100%);
   }
   to {
     opacity: 1;
@@ -223,7 +234,7 @@
 }
 
 .mobile-filter {
-  animation: slideInRight 0.5s ease-out; /* Increased animation duration */
+  animation: slideInRight 0.5s ease-out;
 }
 
 .mobile-sidebar {
@@ -232,5 +243,40 @@
 
 .dropdown-backdrop {
   animation: fadeIn 0.2s ease-out;
+}
+
+/* Improve touch interactions for swipers */
+.swiper-container {
+  touch-action: pan-y;
+}
+
+.swiper-slide {
+  height: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure badges are always visible */
+.badge {
+  z-index: 20;
+  position: relative;
+}
+
+/* Ensure mobile menu has proper background */
+.fixed.inset-y-0.left-0.w-full.max-w-xs {
+  background-color: hsl(var(--background));
+  z-index: 100;
+}
+
+/* Ensure close button is properly positioned */
+.fixed.inset-y-0.left-0.w-full.max-w-xs .absolute.right-4.top-4 {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+/* Ensure mobile menu has proper background */
+.mobile-nav-menu {
+  background-color: hsl(var(--background)) !important;
+  z-index: 100 !important;
 }
 

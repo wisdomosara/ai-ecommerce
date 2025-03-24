@@ -12,7 +12,6 @@ import { getTrendingProducts } from "@/lib/data"
 import type { Product } from "@/lib/types"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Thumbs, FreeMode } from "swiper/modules"
-import type { Swiper as SwiperType } from "swiper"
 import "swiper/css"
 import "swiper/css/navigation"
 import "swiper/css/pagination"
@@ -28,7 +27,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const { addToCart } = useCart()
   const { isAuthenticated, addToLastViewed, toggleSavedItem, user } = useAuth()
   const [quantity, setQuantity] = useState(1)
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null)
+  const [thumbsSwiper, setThumbsSwiper] = useState<any>(null)
   const prevRef = useRef<HTMLButtonElement>(null)
   const nextRef = useRef<HTMLButtonElement>(null)
   const [isSaved, setIsSaved] = useState(false)
@@ -89,55 +88,60 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   }
 
   return (
-    <div className="container py-10 px-4 md:px-6">
+    <div className="container py-10">
       <div className="grid gap-8 md:grid-cols-2">
         {/* Product Images */}
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-hidden">
           <div className="relative overflow-hidden rounded-xl max-h-[500px] md:max-h-none">
-            <Swiper
-              modules={[Navigation, Pagination, Thumbs]}
-              navigation={{
-                prevEl: prevRef.current,
-                nextEl: nextRef.current,
-              }}
-              onBeforeInit={(swiper) => {
-                // @ts-ignore
-                swiper.params.navigation.prevEl = prevRef.current
-                // @ts-ignore
-                swiper.params.navigation.nextEl = nextRef.current
-              }}
-              pagination={{ clickable: true }}
-              loop={true}
-              thumbs={{ swiper: thumbsSwiper }}
-              className="product-detail-swiper rounded-xl"
-            >
-              {product.images.map((image, index) => (
-                <SwiperSlide key={index}>
-                  <div className="aspect-square w-full">
-                    <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`${product.name} - image ${index + 1}`}
-                      width={600}
-                      height={600}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </SwiperSlide>
-              ))}
+            <div className="overflow-hidden">
+              <Swiper
+                modules={[Navigation, Pagination, Thumbs]}
+                navigation={{
+                  prevEl: prevRef.current,
+                  nextEl: nextRef.current,
+                }}
+                onBeforeInit={(swiper) => {
+                  // @ts-ignore
+                  swiper.params.navigation.prevEl = prevRef.current
+                  // @ts-ignore
+                  swiper.params.navigation.nextEl = nextRef.current
+                }}
+                pagination={{ clickable: true }}
+                loop={true}
+                thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                className="product-detail-swiper rounded-xl"
+                grabCursor={true}
+                touchEventsTarget="container"
+                threshold={5}
+              >
+                {product.images.map((image, index) => (
+                  <SwiperSlide key={index}>
+                    <div className="aspect-square w-full h-full">
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.name} - image ${index + 1}`}
+                        width={600}
+                        height={600}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))}
 
-              {product.isNew && <Badge className="absolute left-4 top-4 z-10">New</Badge>}
+                {product.isNew && <Badge className="absolute left-4 top-4 z-10">New</Badge>}
 
-              {product.discount > 0 && (
-                <Badge variant="destructive" className="absolute right-4 top-4 z-10">
-                  {product.discount}% OFF
-                </Badge>
-              )}
-            </Swiper>
+                {product.discount > 0 && (
+                  <Badge variant="destructive" className="absolute right-4 top-4 z-10">
+                    {product.discount}% OFF
+                  </Badge>
+                )}
+              </Swiper>
+            </div>
 
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-4 top-1/2 z-10 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80"
+              className="absolute left-4 top-1/2 z-10 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
               ref={prevRef}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -147,7 +151,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-1/2 z-10 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80"
+              className="absolute right-4 top-1/2 z-10 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
               ref={nextRef}
             >
               <ChevronRight className="h-4 w-4" />
@@ -157,29 +161,31 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Thumbnails */}
           {product.images.length > 1 && (
-            <Swiper
-              onSwiper={setThumbsSwiper}
-              modules={[FreeMode, Navigation, Thumbs]}
-              spaceBetween={8}
-              slidesPerView="auto"
-              freeMode={true}
-              watchSlidesProgress={true}
-              className="thumbs-swiper"
-            >
-              {product.images.map((image, index) => (
-                <SwiperSlide key={index} className="!w-16 !h-16">
-                  <div className="h-full w-full overflow-hidden rounded-md border cursor-pointer">
-                    <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`${product.name} thumbnail ${index + 1}`}
-                      width={64}
-                      height={64}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            <div className="overflow-hidden">
+              <Swiper
+                onSwiper={setThumbsSwiper}
+                modules={[FreeMode, Navigation, Thumbs]}
+                spaceBetween={8}
+                slidesPerView="auto"
+                freeMode={true}
+                watchSlidesProgress={true}
+                className="thumbs-swiper"
+              >
+                {product.images.map((image, index) => (
+                  <SwiperSlide key={index} className="!w-16 !h-16">
+                    <div className="h-full w-full overflow-hidden rounded-md border cursor-pointer">
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.name} thumbnail ${index + 1}`}
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           )}
         </div>
 
@@ -208,7 +214,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           <div className="flex items-center gap-4">
             <p className="text-2xl md:text-3xl font-bold">${product.price.toFixed(2)}</p>
-            {product.originalPrice && (
+            {product.originalPrice !== undefined && (
               <p className="text-lg text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</p>
             )}
             {product.discount > 0 && <Badge variant="destructive">{product.discount}% OFF</Badge>}
@@ -267,12 +273,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               <ShoppingCart className="mr-2 h-5 w-5" />
               Add to Cart
             </Button>
-            <Button
-              variant={isSaved ? "default" : "outline"}
-              size="lg"
-              onClick={handleToggleSave}
-              className={isSaved ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
-            >
+            <Button variant={isSaved ? "default" : "outline"} size="lg" onClick={handleToggleSave}>
               <Heart className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary" : ""}`} />
               {isSaved ? "Saved" : "Save Item"}
             </Button>
@@ -282,9 +283,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       {/* Recommended Products */}
       {recommendedProducts.length > 0 && (
-        <div className="mt-16">
+        <div className="mt-16 product-recommendations">
           <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recommendedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -294,3 +295,4 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     </div>
   )
 }
+

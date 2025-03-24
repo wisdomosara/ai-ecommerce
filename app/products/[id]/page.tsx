@@ -9,8 +9,8 @@ interface ProductPageProps {
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
-  const { id } = await params
-  const product = getProductById(id)
+  const resolvedParams = await params
+  const product = getProductById(resolvedParams.id)
 
   if (!product) {
     return {
@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: ProductPageProps) {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params
-  const product = getProductById(id)
+  const resolvedParams = await params
+  const product = getProductById(resolvedParams.id)
 
   if (!product) {
     notFound()

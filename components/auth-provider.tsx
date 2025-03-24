@@ -33,11 +33,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Cookie configuration
 const USER_COOKIE = "shop_user"
-const COOKIE_OPTIONS: Cookies.CookieAttributes = {
-  expires: 7,
-  path: "/",
-  sameSite: "Lax"
-}
+const COOKIE_OPTIONS: Cookies.CookieAttributes = { expires: 7, path: "/", sameSite: "lax" }
+
+// Add these constants at the top of the file, after the existing constants
+const USER_STORAGE_KEY = "shop_user_data"
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -56,6 +55,10 @@ declare global {
   }
 }
 
+interface GoogleCredentialResponse {
+  credential: string
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -64,19 +67,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   // Check if user is logged in on mount
+  // Update the useEffect that loads the user data to check localStorage first:
   useEffect(() => {
-    const userCookie = Cookies.get(USER_COOKIE)
-    if (userCookie) {
-      try {
-        const parsedUser = JSON.parse(userCookie)
-        setUser(parsedUser)
-        setIsAuthenticated(true)
-        console.log("User loaded from cookie:", parsedUser)
-      } catch (error) {
-        console.error("Failed to parse user from cookie:", error)
-        Cookies.remove(USER_COOKIE, { path: "/" })
+    const loadUserData = () => {
+      // Try to load from localStorage first (faster)
+      const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser)
+          setUser(parsedUser)
+          setIsAuthenticated(true)
+          console.log("User loaded from localStorage:", parsedUser)
+          return true // Successfully loaded from localStorage
+        } catch (error) {
+          console.error("Failed to parse user from localStorage:", error)
+          localStorage.removeItem(USER_STORAGE_KEY)
+        }
       }
+
+      // Fall back to cookie if localStorage failed or is empty
+      const userCookie = Cookies.get(USER_COOKIE)
+      if (userCookie) {
+        try {
+          const parsedUser = JSON.parse(userCookie)
+          setUser(parsedUser)
+          setIsAuthenticated(true)
+
+          // Sync to localStorage for faster access next time
+          localStorage.setItem(USER_STORAGE_KEY, userCookie)
+
+          console.log("User loaded from cookie:", parsedUser)
+          return true
+        } catch (error) {
+          console.error("Failed to parse user from cookie:", error)
+          Cookies.remove(USER_COOKIE, { path: "/" })
+        }
+      }
+
+      return false // Failed to load user data
     }
+
+    // Load user data immediately
+    loadUserData()
+
+    // Set up an interval to check for cookie changes (helps with multiple tabs)
+    const intervalId = setInterval(loadUserData, 1000)
+
+    return () => clearInterval(intervalId)
   }, [])
 
   // Handle redirect after authentication - only when redirectPath changes
@@ -170,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [router, redirectPath])
 
-  const handleGoogleCredentialResponse = async (response: any) => {
+  const handleGoogleCredentialResponse = async (response: GoogleCredentialResponse) => {
     console.log("Google credential response received:", { hasCredential: !!response.credential })
 
     if (response.credential) {
@@ -216,9 +254,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Update the updateUserCookie function to also update localStorage:
   const updateUserCookie = useCallback((userData: User) => {
-    console.log("Updating user cookie:", userData)
+    console.log("Updating user data:", userData)
+
+    // Update cookie
     Cookies.set(USER_COOKIE, JSON.stringify(userData), COOKIE_OPTIONS)
+
+    // Update localStorage for faster access
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
   }, [])
 
   const login = async (email: string, password: string, redirect?: string) => {
@@ -287,7 +331,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Trigger the Google Sign-In prompt with error handling
     try {
       console.log("Prompting Google Sign-In...")
-      window.google.accounts.id.prompt((notification) => {
+      window.google.accounts.id.prompt((notification: any) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
           console.log(
             "Google Sign-In prompt not displayed or skipped:",
@@ -356,16 +400,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Update the logout function to clear both cookie and localStorage:
   const logout = () => {
     setUser(null)
     setIsAuthenticated(false)
     Cookies.remove(USER_COOKIE, { path: "/" })
+    localStorage.removeItem(USER_STORAGE_KEY)
+
+    // Dispatch a custom event that other components can listen for
+    if (typeof window !== "undefined") {
+      const logoutEvent = new Event("user-logout")
+      window.dispatchEvent(logoutEvent)
+    }
   }
 
   const updateUser = useCallback(
     (userData: Partial<User>) => {
       if (user) {
-        const updatedUser = { ...user, ...userData }
+        const updatedUser = { ...user, ...userData } as User
         setUser(updatedUser)
         updateUserCookie(updatedUser)
       }
@@ -430,3 +482,4 @@ export function useAuth() {
   }
   return context
 }
+

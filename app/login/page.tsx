@@ -18,6 +18,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirectTo") || "/"
 
+  // Add this near the top of the component, after the searchParams declaration
   const errorParam = searchParams.get("error")
   const errorMessages: Record<string, string> = {
     auth_failed: "Authentication failed. Please try again.",
@@ -32,10 +33,12 @@ export default function LoginPage() {
   const [isFormLoading, setIsFormLoading] = useState(false)
   const [formError, setFormError] = useState("")
 
+  // Add this after the existing error state declaration
   const [authError, setAuthError] = useState(
-    errorParam ? errorMessages[errorParam] || "Authentication failed" : ""
+    errorParam ? errorMessages[errorParam as keyof typeof errorMessages] || "Authentication failed" : "",
   )
 
+  // Add this in the useEffect or at the component level
   useEffect(() => {
     if (authError) {
       setFormError(authError)
@@ -152,3 +155,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

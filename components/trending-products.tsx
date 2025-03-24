@@ -26,11 +26,21 @@ export default function TrendingProducts({ title, navigationButtons = false }: T
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" ref={navigationPrevRef}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
+              ref={navigationPrevRef}
+            >
               <ChevronLeft className="h-4 w-4" />
               <span className="sr-only">Previous</span>
             </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" ref={navigationNextRef}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
+              ref={navigationNextRef}
+            >
               <ChevronRight className="h-4 w-4" />
               <span className="sr-only">Next</span>
             </Button>
@@ -63,10 +73,13 @@ export default function TrendingProducts({ title, navigationButtons = false }: T
             slidesPerView: 4.2,
           },
         }}
-        className="trending-swiper"
+        className="trending-swiper h-full"
+        grabCursor={true}
+        touchEventsTarget="container"
+        threshold={5}
       >
         {products.map((product) => (
-          <SwiperSlide key={product.id}>
+          <SwiperSlide key={product.id} className="h-full">
             <ProductCard product={product} />
           </SwiperSlide>
         ))}

@@ -1,16 +1,17 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react"
+import { SlidersHorizontal, ChevronUp, ChevronDown, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { Slider } from "@/components/ui/slider"
 import { categories } from "@/lib/data"
 import { useMobile } from "@/hooks/use-mobile"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 interface ProductFiltersProps {
   onFilterChange?: (filters: any) => void
@@ -24,11 +25,14 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
     initialFilters?.priceRange?.[0] || 0,
     initialFilters?.priceRange?.[1] || 200,
   ])
+  const [minPrice, setMinPrice] = useState(initialFilters?.priceRange?.[0]?.toString() || "0")
+  const [maxPrice, setMaxPrice] = useState(initialFilters?.priceRange?.[1]?.toString() || "200")
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialFilters?.categories || [])
   const [selectedRatings, setSelectedRatings] = useState<number[]>(initialFilters?.ratings || [])
   const [sortOption, setSortOption] = useState(initialFilters?.sort || "relevance")
   const [showFilters, setShowFilters] = useState(!isMobile)
   const [expandedItems, setExpandedItems] = useState<string[]>(["sort"])
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const isInitialMount = useRef(true)
   const debouncedUpdate = useRef<NodeJS.Timeout | null>(null)
 
@@ -36,6 +40,8 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
   useEffect(() => {
     if (initialFilters && !isInitialMount.current) {
       setPriceRange([initialFilters.priceRange?.[0] || 0, initialFilters.priceRange?.[1] || 200])
+      setMinPrice(initialFilters.priceRange?.[0]?.toString() || "0")
+      setMaxPrice(initialFilters.priceRange?.[1]?.toString() || "200")
       setSelectedCategories(initialFilters.categories || [])
       setSelectedRatings(initialFilters.ratings || [])
       setSortOption(initialFilters.sort || "relevance")
@@ -96,8 +102,19 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
     setSelectedRatings(newRatings)
   }
 
+  const handlePriceInputChange = (min: string, max: string) => {
+    const minVal = Number.parseInt(min) || 0
+    const maxVal = Number.parseInt(max) || 200
+
+    if (minVal <= maxVal) {
+      setPriceRange([minVal, maxVal])
+    }
+  }
+
   const clearFilters = () => {
     setPriceRange([0, 200])
+    setMinPrice("0")
+    setMaxPrice("200")
     setSelectedCategories([])
     setSelectedRatings([])
     setSortOption("relevance")
@@ -148,15 +165,59 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
           <AccordionTrigger className="text-sm font-medium">Price Range</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-6 px-1 py-2">
+              {/* Manual price input */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-full">
+                  <Label htmlFor="min-price" className="text-xs mb-1 block">
+                    Min
+                  </Label>
+                  <Input
+                    id="min-price"
+                    type="number"
+                    min="0"
+                    max={maxPrice}
+                    value={minPrice}
+                    onChange={(e) => {
+                      setMinPrice(e.target.value)
+                      handlePriceInputChange(e.target.value, maxPrice)
+                    }}
+                    className="h-8"
+                  />
+                </div>
+                <div className="pt-5">-</div>
+                <div className="w-full">
+                  <Label htmlFor="max-price" className="text-xs mb-1 block">
+                    Max
+                  </Label>
+                  <Input
+                    id="max-price"
+                    type="number"
+                    min={minPrice}
+                    max="500"
+                    value={maxPrice}
+                    onChange={(e) => {
+                      setMaxPrice(e.target.value)
+                      handlePriceInputChange(minPrice, e.target.value)
+                    }}
+                    className="h-8"
+                  />
+                </div>
+              </div>
+
+              {/* Slider */}
               <Slider
-                defaultValue={priceRange}
+                value={priceRange}
                 min={0}
                 max={500}
                 step={5}
-                value={priceRange}
-                onValueChange={(value) => setPriceRange(value as [number, number])}
+                onValueChange={(value) => {
+                  setPriceRange(value as [number, number])
+                  setMinPrice(value[0].toString())
+                  setMaxPrice(value[1].toString())
+                }}
                 className="mt-6"
               />
+
               <div className="flex items-center justify-between text-sm">
                 <div className="rounded-md border px-2 py-1">${priceRange[0]}</div>
                 <div className="rounded-md border px-2 py-1">${priceRange[1]}</div>
@@ -239,20 +300,28 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
   if (isMobile) {
     return (
       <>
-        <Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
             <Button
               variant="outline"
               size="sm"
               className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40 rounded-full shadow-lg"
+              onClick={() => setIsSheetOpen(true)}
             >
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               Filters
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[80vh] w-full p-0 mobile-filter">
-            <SheetHeader className="px-4 pt-4">
-              <SheetTitle>Filters</SheetTitle>
+          <SheetContent side="bottom" className="h-[90vh] w-full p-0 mobile-filter">
+            <SheetHeader className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
+              <div className="flex items-center justify-between">
+                <SheetTitle>Filters</SheetTitle>
+                <SheetClose asChild>
+                  <Button variant="ghost" size="icon">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </SheetClose>
+              </div>
             </SheetHeader>
             <div className="overflow-y-auto h-full px-4 pb-20 pt-2">
               <FiltersContent />

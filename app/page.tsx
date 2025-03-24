@@ -12,7 +12,7 @@ export default function Home() {
     <div className="flex flex-col gap-10 py-6 md:gap-16 md:py-10">
       <HeroSection />
 
-      <section className="px-4 md:container">
+      <section className="container">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">New Arrivals</h2>
         </div>
@@ -21,7 +21,7 @@ export default function Home() {
         </Suspense>
       </section>
 
-      <section className="px-4 md:container">
+      <section className="container">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Deals of the Week</h2>
         </div>
@@ -30,13 +30,13 @@ export default function Home() {
         </Suspense>
       </section>
 
-      <section className="px-4 md:container">
+      <section className="container">
         <Suspense fallback={<CollectionsSkeleton />}>
           <CollectionsShowcase title="Collections" navigationButtons={true} />
         </Suspense>
       </section>
 
-      <section className="px-4 md:container">
+      <section className="container">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Categories</h2>
         </div>
@@ -45,7 +45,7 @@ export default function Home() {
         </Suspense>
       </section>
 
-      <section className="px-4 md:container">
+      <section className="container">
         <Suspense fallback={<ProductsSectionSkeleton />}>
           <TrendingProducts title="Trending Products" navigationButtons={true} />
         </Suspense>

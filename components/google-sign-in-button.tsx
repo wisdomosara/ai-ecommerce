@@ -21,21 +21,10 @@ export default function GoogleSignInButton({
   const [isLoading, setIsLoading] = useState(false)
   const [clientId, setClientId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [redirectUri, setRedirectUri] = useState<string | null>(null)
 
-  // Get the client ID from environment variables and fetch the redirect URI
+  // Get the client ID from environment variables
   useEffect(() => {
     setClientId(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null)
-
-    // Fetch the redirect URI from our debug endpoint
-    fetch("/api/auth/debug")
-      .then((res) => res.json())
-      .then((data) => {
-        setRedirectUri(data.redirectUri)
-      })
-      .catch((err) => {
-        console.error("Failed to fetch redirect URI:", err)
-      })
   }, [])
 
   const handleGoogleSignIn = async () => {
@@ -73,13 +62,6 @@ export default function GoogleSignInButton({
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      )}
-
-      {redirectUri && (
-        <div className="text-xs text-muted-foreground">
-          <p>Make sure this redirect URI is authorized in Google Cloud Console:</p>
-          <code className="bg-muted p-1 rounded">{redirectUri}</code>
-        </div>
       )}
 
       <Button
