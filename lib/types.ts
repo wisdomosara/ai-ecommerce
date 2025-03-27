@@ -47,6 +47,7 @@ export interface ShippingAddress {
   postalCode: string
   country: string
   phone: string
+  email: string
 }
 
 export interface PaymentMethod {

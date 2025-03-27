@@ -74,7 +74,7 @@ export default function LoginPage() {
 
         <div className="space-y-4">
           {/* Google Sign-In Button */}
-          <GoogleSignInButton redirectTo={redirectTo} />
+          <GoogleSignInButton redirectTo={redirectTo} text="Sign in with Google" />
 
           <div className="flex items-center">
             <Separator className="flex-1" />

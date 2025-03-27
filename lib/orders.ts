@@ -88,6 +88,7 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
       postalCode: "10001",
       country: "United States",
       phone: "123-456-7890",
+      email: "john.doe@example.com", // Add this line
     },
     paymentMethod: {
       cardNumber: "•••• •••• •••• 4242",
@@ -142,6 +143,7 @@ export async function getMockOrders(): Promise<Order[]> {
         postalCode: "10001",
         country: "United States",
         phone: "123-456-7890",
+        email: "john.doe@example.com", // Add this line
       },
       paymentMethod: {
         cardNumber: "•••• •••• •••• 4242",
@@ -200,6 +202,7 @@ export async function getMockOrders(): Promise<Order[]> {
         postalCode: "10001",
         country: "United States",
         phone: "123-456-7890",
+        email: "john.doe@example.com", // Add this line
       },
       paymentMethod: {
         cardNumber: "•••• •••• •••• 4242",
@@ -243,6 +246,7 @@ export async function getMockOrders(): Promise<Order[]> {
         postalCode: "10001",
         country: "United States",
         phone: "123-456-7890",
+        email: "john.doe@example.com", // Add this line
       },
       paymentMethod: {
         cardNumber: "•••• •••• •••• 4242",

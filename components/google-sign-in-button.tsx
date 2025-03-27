@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/components/auth-provider"
 
 interface GoogleSignInButtonProps {
-  redirectPath?: string
+  redirectTo?: string
   className?: string
+  text?: string
 }
 
-export function GoogleSignInButton({ redirectPath, className }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ redirectTo, className, text = "Sign in with Google" }: GoogleSignInButtonProps) {
   const { loginWithGoogle } = useAuth()
   const buttonRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
@@ -37,7 +38,7 @@ export function GoogleSignInButton({ redirectPath, className }: GoogleSignInButt
   }, [])
 
   const handleGoogleSignIn = () => {
-    loginWithGoogle(redirectPath)
+    loginWithGoogle(redirectTo)
   }
 
   if (!mounted) {
@@ -70,7 +71,7 @@ export function GoogleSignInButton({ redirectPath, className }: GoogleSignInButt
           fill="#EA4335"
         />
       </svg>
-      Sign in with Google
+      {text}
     </Button>
   )
 }

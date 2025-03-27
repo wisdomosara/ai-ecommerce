@@ -28,6 +28,7 @@ const shippingSchema = z.object({
   postalCode: z.string().min(5, "Postal code is required"),
   country: z.string().min(2, "Country is required"),
   phone: z.string().min(10, "Phone number is required"),
+  email: z.string().email("Valid email is required"), // Add this line
 })
 
 const paymentSchema = z.object({
@@ -67,6 +68,7 @@ export default function CheckoutPage() {
         postalCode: "",
         country: "",
         phone: "",
+        email: "", // Add this line
       },
       payment: {
         cardNumber: "",
@@ -134,7 +136,7 @@ export default function CheckoutPage() {
       toast({
         title: "Order Placed Successfully!",
         description: `Your order #${order.id} has been placed.`,
-        variant: "success",
+        variant: "default",
       })
 
       // Redirect to order confirmation page
@@ -307,6 +309,19 @@ export default function CheckoutPage() {
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
                             <Input placeholder="John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="shipping.email"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="john.doe@example.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
