@@ -3,26 +3,34 @@
 import { useState, useEffect } from "react"
 
 export function useMobile(): boolean {
-  // Start with null to avoid hydration mismatch
-  const [isMobile, setIsMobile] = useState<boolean | null>(null)
+  // Always start with false for SSR consistency
+  const [isMobile, setIsMobile] = useState(false)
+  // Track if component is mounted
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // This code only runs on the client
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+    // Mark as mounted
+    setMounted(true)
+
+    // Safe check for window object
+    if (typeof window !== "undefined") {
+      const checkIfMobile = () => {
+        setIsMobile(window.innerWidth < 768)
+      }
+
+      // Initial check
+      checkIfMobile()
+
+      // Add event listener
+      window.addEventListener("resize", checkIfMobile)
+
+      // Clean up
+      return () => window.removeEventListener("resize", checkIfMobile)
     }
-
-    // Check on mount
-    checkIfMobile()
-
-    // Add event listener for window resize
-    window.addEventListener("resize", checkIfMobile)
-
-    // Clean up
-    return () => window.removeEventListener("resize", checkIfMobile)
   }, [])
 
-  // Return false during SSR to avoid hydration mismatch
-  return isMobile === null ? false : isMobile
+  // Always return false during SSR or before mount
+  // This ensures consistent rendering between server and client
+  return mounted ? isMobile : false
 }
 

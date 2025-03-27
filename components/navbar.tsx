@@ -31,6 +31,21 @@ export default function Navbar() {
     setMounted(true)
   }, [])
 
+  // Add this useEffect after the other useEffect hooks
+  useEffect(() => {
+    // Simple approach to prevent scrolling
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+
+    // Cleanup function to ensure scrolling is restored
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isMenuOpen])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -249,7 +264,7 @@ export default function Navbar() {
       {(isMenuOpen || isMenuClosing) && (
         <div className="fixed inset-0 z-50 md:hidden h-screen bg-background/95 backdrop-blur-sm">
           <div
-            className="fixed inset-0 bg-background flex flex-col"
+            className="fixed inset-0 bg-background flex flex-col overflow-y-auto"
             style={{
               animation: isMenuClosing ? "slideOutRight 0.3s ease-out forwards" : "slideInRight 0.3s ease-out forwards",
             }}
@@ -261,7 +276,7 @@ export default function Navbar() {
               </Button>
             </div>
 
-            <nav className="flex flex-col space-y-6 p-6 pt-4">
+            <nav className="flex flex-col space-y-6 p-6 pt-4 overflow-y-auto">
               {navItems.map((item) => (
                 <Link
                   key={item.href}

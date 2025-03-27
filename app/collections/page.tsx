@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function CollectionsPage() {
   return (
-    <div className="container py-10 px-4 md:px-6">
+    <div className="container py-10">
       <h1 className="mb-8 text-3xl font-bold tracking-tight">Collections</h1>
 
       <Suspense fallback={<CollectionsGridSkeleton />}>

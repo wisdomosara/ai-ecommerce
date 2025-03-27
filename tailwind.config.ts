@@ -14,8 +14,8 @@ const config = {
     container: {
       center: true,
       padding: {
-        DEFAULT: "16px",
-        md: "2rem",
+        DEFAULT: "1rem", // Changed to 1rem (16px)
+        md: "1.5rem",
       },
       screens: {
         "2xl": "1400px",

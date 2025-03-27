@@ -29,7 +29,7 @@ export function ProfileTabs() {
           <TabsTrigger value="saved">Saved Items</TabsTrigger>
         </TabsList>
         <TabsContent value="account" className="mt-4 md:mt-6">
-          <Card className="p-4 md:p-6">
+          <Card className="p-4">
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium">Account Information</h3>

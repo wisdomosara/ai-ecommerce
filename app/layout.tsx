@@ -50,7 +50,6 @@ function ThemeScript() {
   return <script dangerouslySetInnerHTML={{ __html: codeToRunOnClient }} />
 }
 
-// Ensure the main container has consistent padding
 export default function RootLayout({
   children,
 }: {
