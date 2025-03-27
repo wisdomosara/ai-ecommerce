@@ -35,6 +35,11 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const isInitialMount = useRef(true)
   const debouncedUpdate = useRef<NodeJS.Timeout | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Update filters when props change
   useEffect(() => {
@@ -136,7 +141,13 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
         </Button>
       </div>
 
-      <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="w-full">
+      <Accordion
+        type="multiple"
+        value={expandedItems}
+        onValueChange={setExpandedItems}
+        className="w-full"
+        defaultValue={["sort"]} // Add this to ensure consistent initial state
+      >
         <AccordionItem value="sort">
           <AccordionTrigger className="text-sm font-medium">Sort By</AccordionTrigger>
           <AccordionContent>
@@ -296,6 +307,10 @@ export default function ProductFilters({ onFilterChange, initialFilters, onVisib
       </Accordion>
     </div>
   )
+
+  if (!mounted) {
+    return null // or a simple loading placeholder
+  }
 
   if (isMobile) {
     return (

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle, CreditCard, Truck } from "lucide-react"
 import OrderSummary from "@/components/order-summary"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "@/hooks/use-toast"
 
 // Form validation schemas
 const shippingSchema = z.object({
@@ -48,22 +50,9 @@ export default function CheckoutPage() {
   const { user, isAuthenticated } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [step, setStep] = useState<"shipping" | "payment" | "confirmation">("shipping")
-
-  // Redirect to login if not authenticated
-  if (typeof window !== "undefined" && !isAuthenticated) {
-    router.push(`/login?redirectTo=${encodeURIComponent("/checkout")}`)
-  }
-
-  // Redirect to cart if cart is empty
-  if (typeof window !== "undefined" && cartItems.length === 0) {
-    router.push("/cart")
-  }
-
-  // Calculate order totals
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = 10 // Fixed shipping cost for now
-  const tax = subtotal * 0.08 // 8% tax rate
-  const total = subtotal + shipping + tax
+  const [isInitializing, setIsInitializing] = useState(true)
+  const [orderSuccess, setOrderSuccess] = useState(false)
+  const [orderId, setOrderId] = useState<string | null>(null)
 
   // Initialize form with default values
   const form = useForm<CheckoutFormValues>({
@@ -88,6 +77,38 @@ export default function CheckoutPage() {
     },
   })
 
+  // Wait for cart and auth to be loaded before checking conditions
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitializing(false)
+    }, 300) // Reduced from 500ms to 300ms for faster loading
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Handle redirects after initialization
+  useEffect(() => {
+    if (!isInitializing) {
+      // Redirect to login if not authenticated
+      if (!isAuthenticated) {
+        router.push(`/login?redirectTo=${encodeURIComponent("/checkout")}`)
+        return
+      }
+
+      // Redirect to cart if cart is empty
+      if (cartItems.length === 0) {
+        router.push("/cart")
+        return
+      }
+    }
+  }, [isInitializing, isAuthenticated, cartItems.length, router])
+
+  // Calculate order totals
+  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  const shipping = 10 // Fixed shipping cost for now
+  const tax = subtotal * 0.08 // 8% tax rate
+  const total = subtotal + shipping + tax
+
   // Handle form submission
   async function onSubmit(data: CheckoutFormValues) {
     if (!user) return
@@ -105,10 +126,26 @@ export default function CheckoutPage() {
       // Clear the cart after successful order
       clearCart()
 
+      // Show success state
+      setOrderSuccess(true)
+      setOrderId(order.id)
+
+      // Show success toast
+      toast({
+        title: "Order Placed Successfully!",
+        description: `Your order #${order.id} has been placed.`,
+        variant: "success",
+      })
+
       // Redirect to order confirmation page
       router.push(`/order-confirmation/${order.id}`)
     } catch (error) {
       console.error("Error placing order:", error)
+      toast({
+        title: "Order Failed",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -146,6 +183,79 @@ export default function CheckoutPage() {
     if (step === "payment") {
       setStep("shipping")
     }
+  }
+
+  // Show loading state during initialization
+  if (isInitializing) {
+    return (
+      <div className="container py-10">
+        <Skeleton className="h-10 w-1/3 mb-8" />
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            {/* Checkout steps skeleton */}
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-1 w-12" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-1 w-12" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </div>
+
+            {/* Form skeleton */}
+            <div className="rounded-lg border p-6">
+              <Skeleton className="h-6 w-48 mb-6" />
+              <div className="grid gap-4 md:grid-cols-2">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className={`space-y-2 ${i <= 2 ? "md:col-span-2" : ""}`}>
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Skeleton className="h-10 w-40" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Skeleton className="h-[500px] w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show success state
+  if (orderSuccess && orderId) {
+    return (
+      <div className="container py-10 text-center">
+        <div className="mx-auto max-w-md">
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-full bg-green-100 p-3">
+              <CheckCircle className="h-12 w-12 text-green-600" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold mb-4">Order Placed Successfully!</h1>
+          <p className="text-muted-foreground mb-6">
+            Your order #{orderId} has been placed and is being processed. You will be redirected to the order
+            confirmation page shortly.
+          </p>
+          <Skeleton className="h-2 w-full mb-1 mx-auto max-w-xs" />
+          <Skeleton className="h-2 w-3/4 mx-auto max-w-xs" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -380,4 +490,16 @@ export default function CheckoutPage() {
     </div>
   )
 }
+
+// Also, remove or comment out the useEffect that handles redirection after success:
+// Redirect to order confirmation page after success
+// useEffect(() => {
+//   if (orderSuccess && orderId) {
+//     const timer = setTimeout(() => {
+//       router.push(`/order-confirmation/${orderId}`)
+//     }, 1500) // Wait 1.5 seconds to show success message before redirecting
+
+//     return () => clearTimeout(timer)
+//   }
+// }, [orderSuccess, orderId, router])
 

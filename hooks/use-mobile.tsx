@@ -2,24 +2,27 @@
 
 import { useState, useEffect } from "react"
 
-export function useMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+export function useMobile(): boolean {
+  // Start with null to avoid hydration mismatch
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
 
   useEffect(() => {
+    // This code only runs on the client
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
 
-    // Initial check
+    // Check on mount
     checkIfMobile()
 
-    // Add event listener
+    // Add event listener for window resize
     window.addEventListener("resize", checkIfMobile)
 
     // Clean up
     return () => window.removeEventListener("resize", checkIfMobile)
   }, [])
 
-  return isMobile
+  // Return false during SSR to avoid hydration mismatch
+  return isMobile === null ? false : isMobile
 }
 

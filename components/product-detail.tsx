@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Star, ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react"
+import { Star, ShoppingCart, Heart, ChevronLeft, ChevronRight, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/components/cart-provider"
@@ -23,8 +23,8 @@ interface ProductDetailProps {
   product: Product
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
-  const { addToCart } = useCart()
+export function ProductDetail({ product }: ProductDetailProps) {
+  const { cartItems, addToCart, updateQuantity, removeFromCart } = useCart()
   const { isAuthenticated, addToLastViewed, toggleSavedItem, user } = useAuth()
   const [quantity, setQuantity] = useState(1)
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null)
@@ -33,13 +33,19 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [isSaved, setIsSaved] = useState(false)
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([])
   const [hasTrackedView, setHasTrackedView] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [inCart, setInCart] = useState(false)
+  const [cartQuantity, setCartQuantity] = useState(0)
 
   // Check if product is saved
   useEffect(() => {
     if (isAuthenticated && user?.savedItems) {
       setIsSaved(user.savedItems.includes(product.id))
+    } else {
+      setIsSaved(false)
     }
-  }, [isAuthenticated, user, product.id])
+    setIsLoading(false)
+  }, [isAuthenticated, user?.savedItems, product.id])
 
   // Track viewed product - only once
   useEffect(() => {
@@ -69,12 +75,53 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     }
 
     setRecommendedProducts(recommended)
-  }, [product.id, product.categorySlug])
+  }, [product.id, product.categorySlug]) // Only re-run if product ID or category changes
+
+  useEffect(() => {
+    const cartItem = cartItems.find((item) => item.id === product.id)
+    if (cartItem) {
+      setInCart(true)
+      setCartQuantity(cartItem.quantity)
+    } else {
+      setInCart(false)
+      setCartQuantity(0)
+    }
+  }, [cartItems, product.id])
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product)
+    if (!inCart) {
+      for (let i = 0; i < quantity; i++) {
+        addToCart(product)
+      }
+
+      // Show visual confirmation
+      const cartNotification = document.createElement("div")
+      cartNotification.className =
+        "fixed top-20 right-4 bg-primary text-primary-foreground py-2 px-4 rounded-md shadow-lg z-50 animate-in fade-in slide-in-from-top-5 duration-300"
+      cartNotification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>${quantity > 1 ? `${quantity} × ` : ""}${product.name} added to cart</span>
+      </div>
+    `
+      document.body.appendChild(cartNotification)
+
+      // Remove the notification after 2 seconds
+      setTimeout(() => {
+        cartNotification.classList.add("animate-out", "fade-out", "slide-out-to-right-5")
+        cartNotification.addEventListener("animationend", () => {
+          document.body.removeChild(cartNotification)
+        })
+      }, 2000)
     }
+  }
+
+  const handleUpdateCartQuantity = () => {
+    updateQuantity(product.id, quantity)
+  }
+
+  const handleRemoveFromCart = () => {
+    removeFromCart(product.id)
   }
 
   const handleToggleSave = () => {
@@ -269,14 +316,71 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Add to Cart
-            </Button>
-            <Button variant={isSaved ? "default" : "outline"} size="lg" onClick={handleToggleSave}>
-              <Heart className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary" : ""}`} />
-              {isSaved ? "Saved" : "Save Item"}
-            </Button>
+            {inCart ? (
+              <>
+                <div className="flex-1 flex items-center justify-between border rounded-md p-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">In Cart: {cartQuantity}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleUpdateCartQuantity}
+                      disabled={quantity === cartQuantity}
+                    >
+                      Update Quantity
+                    </Button>
+                    <Button variant="destructive" size="icon" onClick={handleRemoveFromCart}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <Button
+                  variant={isSaved ? "default" : "outline"}
+                  size="lg"
+                  onClick={handleToggleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Loading...
+                    </span>
+                  ) : (
+                    <>
+                      <Heart className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary" : ""}`} />
+                      {isSaved ? "Saved" : "Save Item"}
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Add to Cart
+                </Button>
+                <Button
+                  variant={isSaved ? "default" : "outline"}
+                  size="lg"
+                  onClick={handleToggleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Loading...
+                    </span>
+                  ) : (
+                    <>
+                      <Heart className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary" : ""}`} />
+                      {isSaved ? "Saved" : "Save Item"}
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -5,22 +5,24 @@ import OrderStatusBadge from "@/components/order-status-badge"
 import type { Order } from "@/lib/types"
 
 interface OrdersTabProps {
-  orders: Order[]
+  orders?: Order[]
 }
 
-export default function OrdersTab({ orders }: OrdersTabProps) {
+export function OrdersTab({ orders = [] }: OrdersTabProps) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Orders</CardTitle>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/orders">View All Orders</Link>
-          </Button>
+          {orders && orders.length > 0 && (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/orders">View All Orders</Link>
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
-        {orders.length > 0 ? (
+        {orders && orders.length > 0 ? (
           <div className="space-y-4">
             {orders.map((order) => (
               <div

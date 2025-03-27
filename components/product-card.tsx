@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ShoppingCart, ChevronLeft, ChevronRight, Heart } from "lucide-react"
+import { ShoppingCart, ChevronLeft, ChevronRight, Heart, Trash2, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/components/cart-provider"
@@ -22,24 +22,67 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart()
+  const { cartItems, addToCart, updateQuantity, removeFromCart } = useCart()
   const { isAuthenticated, user, toggleSavedItem } = useAuth()
   const [isHovered, setIsHovered] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  // Add a loading state to prevent flash of unsaved state
+  const [isLoading, setIsLoading] = useState(true)
   const prevRef = useRef<HTMLButtonElement>(null)
   const nextRef = useRef<HTMLButtonElement>(null)
+  const [inCart, setInCart] = useState(false)
+  const [cartQuantity, setCartQuantity] = useState(0)
 
-  // Check if product is saved
+  // Check if product is saved - add dependency on user.savedItems
   useEffect(() => {
     if (isAuthenticated && user?.savedItems) {
-      setIsSaved(user.savedItems.includes(product.id))
+      const isSavedProduct = user.savedItems.includes(product.id)
+      setIsSaved(isSavedProduct)
+      setIsLoading(false)
+      console.log(`Product ${product.id} saved status:`, isSavedProduct)
+    } else {
+      setIsLoading(false)
     }
   }, [isAuthenticated, user, product.id])
+
+  useEffect(() => {
+    const cartItem = cartItems.find((item) => item.id === product.id)
+    if (cartItem) {
+      setInCart(true)
+      setCartQuantity(cartItem.quantity)
+    } else {
+      setInCart(false)
+      setCartQuantity(0)
+    }
+  }, [cartItems, product.id])
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    addToCart(product)
+
+    if (!inCart) {
+      addToCart(product)
+
+      // Show visual confirmation
+      const cartNotification = document.createElement("div")
+      cartNotification.className =
+        "fixed top-20 right-4 bg-primary text-primary-foreground py-2 px-4 rounded-md shadow-lg z-50 animate-in fade-in slide-in-from-top-5 duration-300"
+      cartNotification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>${product.name} added to cart</span>
+        </div>
+      `
+      document.body.appendChild(cartNotification)
+
+      // Remove the notification after 2 seconds
+      setTimeout(() => {
+        cartNotification.classList.add("animate-out", "fade-out", "slide-out-to-right-5")
+        cartNotification.addEventListener("animationend", () => {
+          document.body.removeChild(cartNotification)
+        })
+      }, 2000)
+    }
   }
 
   const handleToggleSave = (e: React.MouseEvent) => {
@@ -47,12 +90,35 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation()
 
     if (isAuthenticated) {
+      console.log(`Toggling saved state for product ${product.id}`)
       toggleSavedItem(product.id)
       setIsSaved(!isSaved)
     } else {
       // Redirect to login
       window.location.href = `/login?redirectTo=${encodeURIComponent(`/products/${product.id}`)}`
     }
+  }
+
+  const handleIncreaseQuantity = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    updateQuantity(product.id, cartQuantity + 1)
+  }
+
+  const handleDecreaseQuantity = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (cartQuantity > 1) {
+      updateQuantity(product.id, cartQuantity - 1)
+    } else {
+      removeFromCart(product.id)
+    }
+  }
+
+  const handleRemoveFromCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    removeFromCart(product.id)
   }
 
   return (
@@ -63,7 +129,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative overflow-hidden rounded-xl border border-border transition-all duration-300 hover:shadow-md">
-        <div className="aspect-square w-full h-full overflow-hidden rounded-lg">
+        <div className="aspect-square w-full h-full overflow-hidden rounded-lg" style={{ maxHeight: "300px" }}>
           {product.images.length > 1 ? (
             <div className="relative h-full w-full overflow-hidden">
               <Swiper
@@ -151,19 +217,61 @@ export default function ProductCard({ product }: ProductCardProps) {
           <p className="text-sm text-muted-foreground line-clamp-1">{product.category}</p>
 
           <div className="pt-2 flex justify-between items-center gap-2">
-            <Button variant="secondary" size="sm" className="flex-1" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to Cart
-            </Button>
-            <Button
-              variant={isSaved ? "default" : "outline"}
-              size="icon"
-              className="h-9 w-9"
-              onClick={handleToggleSave}
-            >
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-primary" : ""}`} />
-              <span className="sr-only">{isSaved ? "Unsave" : "Save"}</span>
-            </Button>
+            {inCart ? (
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-l-md rounded-r-none border-r-0"
+                    onClick={handleDecreaseQuantity}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <div className="h-8 px-2 flex items-center justify-center border-y border-input min-w-[2rem]">
+                    {cartQuantity}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-r-md rounded-l-none border-l-0"
+                    onClick={handleIncreaseQuantity}
+                    disabled={cartQuantity >= product.stock}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleRemoveFromCart}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button variant="secondary" size="sm" className="flex-1" onClick={handleAddToCart}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Add to Cart
+                </Button>
+                <Button
+                  variant={isSaved ? "default" : "outline"}
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={handleToggleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    <Heart className={`h-4 w-4 ${isSaved ? "fill-primary" : ""}`} />
+                  )}
+                  <span className="sr-only">{isSaved ? "Unsave" : "Save"}</span>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

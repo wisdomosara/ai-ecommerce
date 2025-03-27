@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation"
+import { ProductDetail } from "@/components/product-detail"
 import { getProductById } from "@/lib/data"
-import ProductDetail from "@/components/product-detail"
+import { notFound } from "next/navigation"
 
 interface ProductPageProps {
   params: Promise<{
@@ -8,28 +8,16 @@ interface ProductPageProps {
   }>
 }
 
-export async function generateMetadata({ params }: ProductPageProps) {
-  const resolvedParams = await params
-  const product = getProductById(resolvedParams.id)
-
-  if (!product) {
-    return {
-      title: "Product Not Found - ShopHub",
-      description: "The requested product could not be found",
-    }
-  }
-
-  return {
-    title: `${product.name} - ShopHub`,
-    description: product.description,
-  }
-}
-
 export default async function ProductPage({ params }: ProductPageProps) {
+  // Await the params Promise to get the actual id
   const resolvedParams = await params
+  console.log("Resolved params:", resolvedParams)
+
   const product = getProductById(resolvedParams.id)
+  console.log("Product found:", !!product)
 
   if (!product) {
+    console.log("Product not found, returning 404")
     notFound()
   }
 

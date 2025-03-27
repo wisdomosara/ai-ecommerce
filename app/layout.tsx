@@ -27,6 +27,29 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+// Add a script to prevent flash of unstyled content
+function ThemeScript() {
+  const codeToRunOnClient = `
+    (function() {
+      try {
+        const theme = localStorage.getItem('theme') || 'system';
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const resolvedTheme = theme === 'system' ? systemTheme : theme;
+        
+        if (resolvedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {
+        console.error('Error applying theme:', e);
+      }
+    })();
+  `
+
+  return <script dangerouslySetInnerHTML={{ __html: codeToRunOnClient }} />
+}
+
 // Ensure the main container has consistent padding
 export default function RootLayout({
   children,
@@ -35,6 +58,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>

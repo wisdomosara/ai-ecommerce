@@ -1,10 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cookies } from "next/headers"
-import { getProductById } from "@/lib/data"
-import { getMockOrders } from "@/lib/orders"
-import ProfileTabs from "@/components/profile/profile-tabs"
 import LogoutButton from "@/components/profile/logout-button"
-import type { Product, Order } from "@/lib/types"
+import { ProfileTabs } from "@/components/profile/profile-tabs"
 
 export const metadata = {
   title: "Your Profile - ShopHub",
@@ -19,34 +16,14 @@ interface UserData {
   image?: string
   lastViewed?: string[]
   savedItems?: string[]
-  orders?: Order[]
+  orders?: string[]
 }
 
 export default async function ProfilePage() {
-  // Get user data from cookie - cookies() now returns a Promise in Next.js 15
+  // Get user data from cookie
   const cookieStore = await cookies()
   const userCookie = cookieStore.get("shop_user")?.value
   const user: UserData | null = userCookie ? JSON.parse(userCookie) : null
-
-  // Get last viewed products
-  let lastViewedProducts: Product[] = []
-  if (user?.lastViewed?.length) {
-    lastViewedProducts = user.lastViewed
-      .map((id: string) => getProductById(id))
-      .filter((product: Product | undefined): product is Product => product !== undefined)
-  }
-
-  // Get saved products
-  let savedProducts: Product[] = []
-  if (user?.savedItems?.length) {
-    savedProducts = user.savedItems
-      .map((id: string) => getProductById(id))
-      .filter((product: Product | undefined): product is Product => product !== undefined)
-  }
-
-  // Get recent orders
-  const allOrders = await getMockOrders()
-  const recentOrders = allOrders.slice(0, 2) // Just show the 2 most recent orders
 
   return (
     <div className="container py-10">
@@ -64,12 +41,8 @@ export default async function ProfilePage() {
           <LogoutButton className="ml-auto" />
         </div>
 
-        {/* Profile Content */}
-        <ProfileTabs
-          recentOrders={recentOrders}
-          savedProducts={savedProducts}
-          lastViewedProducts={lastViewedProducts}
-        />
+        {/* Profile Content - now we're not passing any pre-fetched data */}
+        <ProfileTabs />
       </div>
     </div>
   )

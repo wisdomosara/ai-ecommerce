@@ -149,7 +149,7 @@ export default function Navbar() {
                   size="icon"
                   className="bg-background/0 hover:bg-background/80 dark:hover:bg-white/20"
                 >
-                  {isAuthenticated && user?.image ? (
+                  {mounted && isAuthenticated && user?.image ? (
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.image} alt={user.name} />
                       <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
@@ -230,7 +230,7 @@ export default function Navbar() {
 
           {/* Mobile menu button with avatar */}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isAuthenticated && user?.image ? (
+            {mounted && isAuthenticated && user?.image ? (
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user.image} alt={user.name} />
                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>

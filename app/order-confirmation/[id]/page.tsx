@@ -6,6 +6,11 @@ import { getOrderById } from "@/lib/orders"
 import OrderSummary from "@/components/order-summary"
 import { notFound } from "next/navigation"
 
+export const metadata = {
+  title: "Order Confirmation",
+  description: "Your order has been successfully placed",
+}
+
 interface OrderConfirmationPageProps {
   params: Promise<{
     id: string
@@ -34,6 +39,10 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
         <p className="mt-2 text-muted-foreground">
           Thank you for your purchase. Your order has been received and is being processed.
         </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A confirmation email has been sent to{" "}
+          <span className="font-medium">{order.shippingAddress.email || "your email address"}</span>.
+        </p>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -44,15 +53,21 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Order Number</h3>
-                <p className="mt-1">{order.id}</p>
+                <p className="mt-1 font-medium">{order.id}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Order Date</h3>
-                <p className="mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                <p className="mt-1">
+                  {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
+                </p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Order Status</h3>
-                <p className="mt-1 capitalize">{order.status}</p>
+                <p className="mt-1 capitalize">
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                    {order.status}
+                  </span>
+                </p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Payment Method</h3>
@@ -118,7 +133,7 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
 
           <div className="mt-6 flex flex-col gap-4">
             <Button asChild>
-              <Link href="/profile">View Your Orders</Link>
+              <Link href="/orders">View Your Orders</Link>
             </Button>
             <Button asChild variant="outline">
               <Link href="/">Continue Shopping</Link>

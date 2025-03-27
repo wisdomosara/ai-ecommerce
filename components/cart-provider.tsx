@@ -15,29 +15,51 @@ interface CartContextType {
   removeFromCart: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
+  isInitialized: boolean
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
+// Create a default context value for SSR
+const defaultContextValue: CartContextType = {
+  cartItems: [],
+  addToCart: () => {},
+  removeFromCart: () => {},
+  updateQuantity: () => {},
+  clearCart: () => {},
+  isInitialized: false,
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [mounted, setMounted] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  // Load cart from localStorage on mount
+  // Set mounted state and load cart data
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart")
-    if (savedCart) {
+    setMounted(true)
+
+    // Try to load cart data from localStorage
+    if (typeof window !== "undefined") {
       try {
-        setCartItems(JSON.parse(savedCart))
+        const savedCart = localStorage.getItem("cart")
+        if (savedCart) {
+          setCartItems(JSON.parse(savedCart))
+        }
       } catch (error) {
         console.error("Failed to parse cart from localStorage:", error)
       }
+      // Mark as initialized after loading data
+      setIsInitialized(true)
     }
   }, [])
 
   // Save cart to localStorage when it changes
   useEffect(() => {
+    if (!mounted) return
+
     localStorage.setItem("cart", JSON.stringify(cartItems))
-  }, [cartItems])
+  }, [cartItems, mounted])
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
@@ -71,6 +93,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Add an event listener for the logout event
   useEffect(() => {
+    if (!mounted) return
+
     const handleUserLogout = () => {
       clearCart()
     }
@@ -80,7 +104,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener("user-logout", handleUserLogout)
     }
-  }, [])
+  }, [mounted])
+
+  // Return default context during SSR to avoid hydration mismatch
+  if (!mounted) {
+    return <CartContext.Provider value={defaultContextValue}>{children}</CartContext.Provider>
+  }
 
   return (
     <CartContext.Provider
@@ -90,6 +119,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        isInitialized,
       }}
     >
       {children}

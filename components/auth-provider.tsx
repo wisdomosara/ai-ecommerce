@@ -26,7 +26,7 @@ interface AuthContextType {
   logout: () => void
   updateUser: (userData: Partial<User>) => void
   addToLastViewed: (productId: string) => void
-  toggleSavedItem: (productId: string) => void
+  toggleSavedItem: (productId: string) => Promise<boolean> | boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -59,75 +59,109 @@ interface GoogleCredentialResponse {
   credential: string
 }
 
+// Create a default context value for SSR
+const defaultContextValue: AuthContextType = {
+  user: null,
+  isAuthenticated: false,
+  login: async () => {},
+  loginWithGoogle: async () => {},
+  register: async () => {},
+  logout: () => {},
+  updateUser: () => {},
+  addToLastViewed: () => {},
+  toggleSavedItem: async () => false,
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [redirectPath, setRedirectPath] = useState<string | null>(null)
   const [googleInitialized, setGoogleInitialized] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
-  // Check if user is logged in on mount
-  // Update the useEffect that loads the user data to check localStorage first:
+  // Set mounted state
   useEffect(() => {
-    const loadUserData = () => {
-      // Try to load from localStorage first (faster)
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+    setMounted(true)
 
-      if (storedUser) {
-        try {
+    // Try to load user data synchronously from localStorage if available
+    if (typeof window !== "undefined") {
+      try {
+        // Try localStorage first (faster)
+        const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+        if (storedUser) {
           const parsedUser = JSON.parse(storedUser)
           setUser(parsedUser)
           setIsAuthenticated(true)
-          console.log("User loaded from localStorage:", parsedUser)
-          return true // Successfully loaded from localStorage
-        } catch (error) {
-          console.error("Failed to parse user from localStorage:", error)
-          localStorage.removeItem(USER_STORAGE_KEY)
+          return
         }
-      }
 
-      // Fall back to cookie if localStorage failed or is empty
+        // Fall back to cookie
+        const userCookie = Cookies.get(USER_COOKIE)
+        if (userCookie) {
+          const parsedUser = JSON.parse(userCookie)
+          // Store in localStorage for future fast access
+          localStorage.setItem(USER_STORAGE_KEY, userCookie)
+          setUser(parsedUser)
+          setIsAuthenticated(true)
+        }
+      } catch (error) {
+        console.error("Failed to parse user data:", error)
+      }
+    }
+  }, [])
+
+  // Check if user is logged in on mount - now just for cookie changes
+  useEffect(() => {
+    if (!mounted) return
+
+    const checkCookieChanges = () => {
       const userCookie = Cookies.get(USER_COOKIE)
+
+      // If cookie exists but doesn't match current user
       if (userCookie) {
         try {
           const parsedUser = JSON.parse(userCookie)
-          setUser(parsedUser)
-          setIsAuthenticated(true)
+          const currentUserJson = user ? JSON.stringify(user) : null
 
-          // Sync to localStorage for faster access next time
-          localStorage.setItem(USER_STORAGE_KEY, userCookie)
-
-          console.log("User loaded from cookie:", parsedUser)
-          return true
+          // Only update if different
+          if (JSON.stringify(parsedUser) !== currentUserJson) {
+            setUser(parsedUser)
+            setIsAuthenticated(true)
+            localStorage.setItem(USER_STORAGE_KEY, userCookie)
+          }
         } catch (error) {
-          console.error("Failed to parse user from cookie:", error)
-          Cookies.remove(USER_COOKIE, { path: "/" })
+          console.error("Failed to parse cookie:", error)
         }
+      } else if (isAuthenticated) {
+        // Cookie was removed elsewhere
+        setUser(null)
+        setIsAuthenticated(false)
+        localStorage.removeItem(USER_STORAGE_KEY)
       }
-
-      return false // Failed to load user data
     }
 
-    // Load user data immediately
-    loadUserData()
-
     // Set up an interval to check for cookie changes (helps with multiple tabs)
-    const intervalId = setInterval(loadUserData, 1000)
+    const intervalId = setInterval(checkCookieChanges, 1000)
 
     return () => clearInterval(intervalId)
-  }, [])
+  }, [user, isAuthenticated, mounted])
 
   // Handle redirect after authentication - only when redirectPath changes
   useEffect(() => {
+    if (!mounted) return
+
     if (isAuthenticated && redirectPath) {
       console.log("Redirecting authenticated user to:", redirectPath)
       router.push(redirectPath)
       setRedirectPath(null)
     }
-  }, [isAuthenticated, redirectPath, router])
+  }, [isAuthenticated, redirectPath, router, mounted])
 
   // Load Google OAuth script
   useEffect(() => {
+    if (!mounted) return
+
     if (GOOGLE_CLIENT_ID && !googleInitialized && typeof window !== "undefined") {
       const loadGoogleScript = () => {
         console.log("Loading Google Sign-In script...")
@@ -169,12 +203,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [googleInitialized])
+  }, [googleInitialized, mounted])
 
   // Add an event listener for cookie changes
 
   // Add this inside the AuthProvider component, after the existing useEffect hooks
   useEffect(() => {
+    if (!mounted) return
+
     // Listen for messages from the popup window
     const handleMessage = (event: MessageEvent) => {
       // Verify the origin
@@ -206,7 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener("message", handleMessage)
     }
-  }, [router, redirectPath])
+  }, [router, redirectPath, mounted])
 
   const handleGoogleCredentialResponse = async (response: GoogleCredentialResponse) => {
     console.log("Google credential response received:", { hasCredential: !!response.credential })
@@ -258,11 +294,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateUserCookie = useCallback((userData: User) => {
     console.log("Updating user data:", userData)
 
-    // Update cookie
-    Cookies.set(USER_COOKIE, JSON.stringify(userData), COOKIE_OPTIONS)
-
-    // Update localStorage for faster access
+    // Update localStorage first (faster access)
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
+
+    // Then update cookie
+    Cookies.set(USER_COOKIE, JSON.stringify(userData), COOKIE_OPTIONS)
   }, [])
 
   const login = async (email: string, password: string, redirect?: string) => {
@@ -404,8 +440,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null)
     setIsAuthenticated(false)
-    Cookies.remove(USER_COOKIE, { path: "/" })
     localStorage.removeItem(USER_STORAGE_KEY)
+    Cookies.remove(USER_COOKIE, { path: "/" })
 
     // Dispatch a custom event that other components can listen for
     if (typeof window !== "undefined") {
@@ -429,8 +465,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (productId: string) => {
       if (user) {
         const lastViewed = user.lastViewed || []
+
+        // Check if the product is already at the beginning of the array
+        if (lastViewed[0] === productId) {
+          return // Already the most recent, no need to update
+        }
+
         // Remove the product if it already exists to avoid duplicates
         const filteredLastViewed = lastViewed.filter((id) => id !== productId)
+
         // Add the product to the beginning of the array
         const updatedLastViewed = [productId, ...filteredLastViewed].slice(0, 10) // Keep only the 10 most recent
 
@@ -440,6 +483,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user, updateUser],
   )
 
+  // Update the toggleSavedItem function to ensure it properly updates the UI
+
+  // Find the toggleSavedItem function and update it to ensure it properly updates the UI
   const toggleSavedItem = useCallback(
     (productId: string) => {
       if (user) {
@@ -449,15 +495,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (savedItems.includes(productId)) {
           // Remove the product if it's already saved
           updatedSavedItems = savedItems.filter((id) => id !== productId)
+          console.log(`Removing product ${productId} from saved items`)
         } else {
           // Add the product if it's not saved
           updatedSavedItems = [...savedItems, productId]
+          console.log(`Adding product ${productId} to saved items`)
         }
 
-        updateUser({ savedItems: updatedSavedItems })
+        // Update the user state with the new saved items
+        const updatedUser = { ...user, savedItems: updatedSavedItems }
+        setUser(updatedUser)
+        updateUserCookie(updatedUser)
+
+        // Log the updated saved items for debugging
+        console.log("Updated saved items:", updatedSavedItems)
+
+        // Return the updated saved items status to allow components to update their local state
+        return !savedItems.includes(productId)
       }
+      return false
     },
-    [user, updateUser],
+    [user, updateUserCookie],
   )
 
   const contextValue = {
@@ -470,6 +528,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateUser,
     addToLastViewed,
     toggleSavedItem,
+  }
+
+  // Return default context during SSR to avoid hydration mismatch
+  if (!mounted) {
+    return <AuthContext.Provider value={defaultContextValue}>{children}</AuthContext.Provider>
   }
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

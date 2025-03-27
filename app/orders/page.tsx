@@ -51,8 +51,8 @@ export default async function OrdersPage() {
                   </ul>
                 </div>
                 <div className="flex justify-end">
-                  <Button asChild>
-                    <Link href={`/orders/${order.id}`}>View Order Details</Link>
+                  <Button asChild size="sm">
+                    <Link href={`/orders/${order.id}`}>View Details</Link>
                   </Button>
                 </div>
               </CardContent>
