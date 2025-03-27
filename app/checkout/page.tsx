@@ -28,7 +28,7 @@ const shippingSchema = z.object({
   postalCode: z.string().min(5, "Postal code is required"),
   country: z.string().min(2, "Country is required"),
   phone: z.string().min(10, "Phone number is required"),
-  email: z.string().email("Valid email is required"), // Add this line
+  email: z.string().email("Valid email is required"),
 })
 
 const paymentSchema = z.object({
@@ -68,7 +68,7 @@ export default function CheckoutPage() {
         postalCode: "",
         country: "",
         phone: "",
-        email: "", // Add this line
+        email: "",
       },
       payment: {
         cardNumber: "",
@@ -83,7 +83,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitializing(false)
-    }, 300) // Reduced from 500ms to 300ms for faster loading
+    }, 300)
 
     return () => clearTimeout(timer)
   }, [])
@@ -190,10 +190,10 @@ export default function CheckoutPage() {
   // Show loading state during initialization
   if (isInitializing) {
     return (
-      <div className="container py-10">
-        <Skeleton className="h-10 w-1/3 mb-8" />
+      <div className="container py-6 md:py-10">
+        <Skeleton className="h-10 w-1/3 mb-6 md:mb-8" />
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {/* Checkout steps skeleton */}
             <div className="mb-6 flex items-center justify-between">
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Form skeleton */}
-            <div className="rounded-lg border p-6">
+            <div className="rounded-lg border p-4 md:p-6">
               <Skeleton className="h-6 w-48 mb-6" />
               <div className="grid gap-4 md:grid-cols-2">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -241,7 +241,7 @@ export default function CheckoutPage() {
   // Show success state
   if (orderSuccess && orderId) {
     return (
-      <div className="container py-10 text-center">
+      <div className="container py-6 md:py-10 text-center">
         <div className="mx-auto max-w-md">
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-green-100 p-3">
@@ -261,12 +261,12 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container py-10">
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Checkout</h1>
+    <div className="container py-6 md:py-10">
+      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">Checkout</h1>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 hidden md:flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full ${step === "shipping" || step === "payment" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
@@ -295,11 +295,19 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {/* Mobile step indicator */}
+          <div className="flex items-center justify-between mb-4 md:hidden">
+            <h2 className="text-lg font-semibold">
+              {step === "shipping" ? "Shipping Information" : "Payment Information"}
+            </h2>
+            <div className="text-sm text-muted-foreground">Step {step === "shipping" ? "1" : "2"} of 2</div>
+          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {step === "shipping" && (
-                <div className="rounded-lg border p-6">
-                  <h2 className="mb-4 text-xl font-semibold">Shipping Information</h2>
+                <div className="rounded-lg border p-4 md:p-6">
+                  <h2 className="mb-4 text-xl font-semibold hidden md:block">Shipping Information</h2>
                   <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
@@ -420,7 +428,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div className="mt-6 flex justify-end">
-                    <Button type="button" onClick={nextStep}>
+                    <Button type="button" onClick={nextStep} className="w-full md:w-auto">
                       Continue to Payment
                     </Button>
                   </div>
@@ -428,8 +436,8 @@ export default function CheckoutPage() {
               )}
 
               {step === "payment" && (
-                <div className="rounded-lg border p-6">
-                  <h2 className="mb-4 text-xl font-semibold">Payment Information</h2>
+                <div className="rounded-lg border p-4 md:p-6">
+                  <h2 className="mb-4 text-xl font-semibold hidden md:block">Payment Information</h2>
                   <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
@@ -484,11 +492,11 @@ export default function CheckoutPage() {
                       )}
                     />
                   </div>
-                  <div className="mt-6 flex justify-between">
-                    <Button type="button" variant="outline" onClick={prevStep}>
+                  <div className="mt-6 flex flex-col-reverse md:flex-row md:justify-between gap-3 md:gap-0">
+                    <Button type="button" variant="outline" onClick={prevStep} className="w-full md:w-auto">
                       Back to Shipping
                     </Button>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
                       {isSubmitting ? "Processing..." : "Place Order"}
                     </Button>
                   </div>
@@ -505,16 +513,4 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
-// Also, remove or comment out the useEffect that handles redirection after success:
-// Redirect to order confirmation page after success
-// useEffect(() => {
-//   if (orderSuccess && orderId) {
-//     const timer = setTimeout(() => {
-//       router.push(`/order-confirmation/${orderId}`)
-//     }, 1500) // Wait 1.5 seconds to show success message before redirecting
-
-//     return () => clearTimeout(timer)
-//   }
-// }, [orderSuccess, orderId, router])
 

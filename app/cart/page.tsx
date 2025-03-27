@@ -48,14 +48,14 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container py-10">
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Your Cart</h1>
+    <div className="container py-6 md:py-10">
+      <h1 className="mb-6 md:mb-8 text-2xl md:text-3xl font-bold tracking-tight">Your Cart</h1>
 
       {cartItems.length > 0 ? (
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="rounded-lg border">
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 <ul className="divide-y">
                   {cartItems.map((item) => (
                     <li key={item.id} className="py-4 first:pt-0 last:pb-0">
@@ -118,7 +118,7 @@ export default function CartPage() {
                 </ul>
               </div>
 
-              <div className="border-t p-6">
+              <div className="border-t p-4 md:p-6">
                 <Button variant="outline" onClick={clearCart}>
                   Clear Cart
                 </Button>
@@ -128,7 +128,7 @@ export default function CartPage() {
 
           <div>
             <div className="rounded-lg border">
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
 
                 <div className="space-y-4">
@@ -160,7 +160,7 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="border-t p-6">
+              <div className="border-t p-4 md:p-6">
                 <Button className="w-full" onClick={handleCheckout}>
                   Checkout <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -186,13 +186,13 @@ export default function CartPage() {
 // Update the CartSkeleton function to better match the actual layout
 function CartSkeleton() {
   return (
-    <div className="container py-10">
-      <Skeleton className="h-10 w-48 mb-8" />
+    <div className="container py-6 md:py-10">
+      <Skeleton className="h-8 w-48 mb-6 md:mb-8" />
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="rounded-lg border">
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               <ul className="space-y-6">
                 {[1, 2, 3].map((i) => (
                   <li key={i} className="py-4 first:pt-0 last:pb-0">
@@ -220,7 +220,7 @@ function CartSkeleton() {
                 ))}
               </ul>
             </div>
-            <div className="border-t p-6">
+            <div className="border-t p-4 md:p-6">
               <Skeleton className="h-10 w-32" />
             </div>
           </div>
@@ -228,7 +228,7 @@ function CartSkeleton() {
 
         <div>
           <div className="rounded-lg border">
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               <Skeleton className="h-6 w-40 mb-6" />
               <div className="space-y-4">
                 <div className="flex justify-between">
@@ -251,7 +251,7 @@ function CartSkeleton() {
                 </div>
               </div>
             </div>
-            <div className="border-t p-6">
+            <div className="border-t p-4 md:p-6">
               <Skeleton className="h-10 w-full" />
             </div>
           </div>

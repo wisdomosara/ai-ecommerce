@@ -22,7 +22,7 @@ export default function OrderSummary({
 }: OrderSummaryProps) {
   return (
     <div className="rounded-lg border">
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
 
         {showItemDetails && (

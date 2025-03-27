@@ -15,14 +15,14 @@ export default async function OrdersPage() {
   const orders = await getMockOrders()
 
   return (
-    <div className="container py-10">
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Your Orders</h1>
+    <div className="container py-6 md:py-10">
+      <h1 className="mb-6 md:mb-8 text-2xl md:text-3xl font-bold tracking-tight">Your Orders</h1>
 
       {orders.length > 0 ? (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {orders.map((order) => (
             <Card key={order.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/30 pb-2">
+              <CardHeader className="bg-muted/30 pb-2 p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <CardTitle className="text-base">Order #{order.id}</CardTitle>
@@ -36,7 +36,7 @@ export default async function OrdersPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 p-4 md:p-6">
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Items</h3>
                   <ul className="space-y-2">

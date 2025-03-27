@@ -30,12 +30,12 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
   }
 
   return (
-    <div className="container py-10">
-      <div className="mb-8 text-center">
+    <div className="container py-6 md:py-10">
+      <div className="mb-6 md:mb-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
           <CheckCircle2 className="h-8 w-8 text-green-600" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Order Confirmed!</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Order Confirmed!</h1>
         <p className="mt-2 text-muted-foreground">
           Thank you for your purchase. Your order has been received and is being processed.
         </p>
@@ -45,10 +45,10 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="rounded-lg border p-6">
-            <h2 className="mb-4 text-xl font-semibold">Order Details</h2>
+          <div className="rounded-lg border p-4 md:p-6">
+            <h2 className="mb-4 text-lg md:text-xl font-semibold">Order Details</h2>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div>

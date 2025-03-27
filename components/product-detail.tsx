@@ -135,8 +135,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
   }
 
   return (
-    <div className="container py-10">
-      <div className="grid gap-8 md:grid-cols-2">
+    <div className="container py-6 md:py-10">
+      <div className="grid gap-6 md:gap-8 md:grid-cols-2">
         {/* Product Images */}
         <div className="space-y-4 overflow-hidden">
           <div className="relative overflow-hidden rounded-xl max-h-[500px] md:max-h-none">
@@ -387,7 +387,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
       {/* Recommended Products */}
       {recommendedProducts.length > 0 && (
-        <div className="mt-16 product-recommendations">
+        <div className="mt-12 md:mt-16 product-recommendations">
           <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recommendedProducts.map((product) => (

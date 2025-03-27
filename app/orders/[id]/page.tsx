@@ -28,23 +28,23 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <div className="container py-10">
-      <div className="mb-8">
+    <div className="container py-6 md:py-10">
+      <div className="mb-6 md:mb-8">
         <Button variant="ghost" asChild className="mb-4">
           <Link href="/orders" className="flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Orders
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Order Details</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Order Details</h1>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="rounded-lg border p-6">
+          <div className="rounded-lg border p-4 md:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
               <div>
-                <h2 className="text-xl font-semibold">Order #{order.id}</h2>
+                <h2 className="text-lg md:text-xl font-semibold">Order #{order.id}</h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   Placed on {new Date(order.createdAt).toLocaleDateString()} at{" "}
                   {new Date(order.createdAt).toLocaleTimeString()}
