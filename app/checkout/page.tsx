@@ -1,22 +1,29 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { useCart } from "@/components/cart-provider"
-import { useAuth } from "@/components/auth-provider"
-import { placeOrder } from "@/lib/orders"
-import type { ShippingAddress, PaymentMethod } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { CheckCircle, CreditCard, Truck } from "lucide-react"
-import OrderSummary from "@/components/order-summary"
-import { Skeleton } from "@/components/ui/skeleton"
-import { toast } from "@/hooks/use-toast"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useCart } from "@/components/cart-provider";
+import { useAuth } from "@/components/auth-provider";
+import { placeOrder } from "@/lib/orders";
+import type { ShippingAddress, PaymentMethod } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle, CreditCard, Truck } from "lucide-react";
+import OrderSummary from "@/components/order-summary";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/hooks/use-toast";
 
 // Form validation schemas
 const shippingSchema = z.object({
@@ -29,31 +36,33 @@ const shippingSchema = z.object({
   country: z.string().min(2, "Country is required"),
   phone: z.string().min(10, "Phone number is required"),
   email: z.string().email("Valid email is required"),
-})
+});
 
 const paymentSchema = z.object({
   cardNumber: z.string().min(16, "Card number is required"),
   nameOnCard: z.string().min(2, "Name on card is required"),
   expiryDate: z.string().min(5, "Expiry date is required"),
   cvv: z.string().min(3, "CVV is required"),
-})
+});
 
 const checkoutSchema = z.object({
   shipping: shippingSchema,
   payment: paymentSchema,
-})
+});
 
-type CheckoutFormValues = z.infer<typeof checkoutSchema>
+type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
-  const router = useRouter()
-  const { cartItems, clearCart } = useCart()
-  const { user, isAuthenticated } = useAuth()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [step, setStep] = useState<"shipping" | "payment" | "confirmation">("shipping")
-  const [isInitializing, setIsInitializing] = useState(true)
-  const [orderSuccess, setOrderSuccess] = useState(false)
-  const [orderId, setOrderId] = useState<string | null>(null)
+  const router = useRouter();
+  const { cartItems, clearCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState<"shipping" | "payment" | "confirmation">(
+    "shipping"
+  );
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   // Initialize form with default values
   const form = useForm<CheckoutFormValues>({
@@ -77,79 +86,86 @@ export default function CheckoutPage() {
         cvv: "",
       },
     },
-  })
+  });
 
   // Wait for cart and auth to be loaded before checking conditions
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsInitializing(false)
-    }, 300)
+      setIsInitializing(false);
+    }, 300);
 
-    return () => clearTimeout(timer)
-  }, [])
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle redirects after initialization
   useEffect(() => {
     if (!isInitializing) {
       // Redirect to login if not authenticated
       if (!isAuthenticated) {
-        router.push(`/login?redirectTo=${encodeURIComponent("/checkout")}`)
-        return
+        router.push(`/login?redirectTo=${encodeURIComponent("/checkout")}`);
+        return;
       }
 
-      // Redirect to cart if cart is empty
-      if (cartItems.length === 0) {
-        router.push("/cart")
-        return
+      // Only redirect to cart if cart is empty AND we're not in the process of completing an order
+      // This prevents redirection from the order-confirmation page
+      if (cartItems.length === 0 && !orderSuccess) {
+        router.push("/cart");
+        return;
       }
     }
-  }, [isInitializing, isAuthenticated, cartItems.length, router])
+  }, [isInitializing, isAuthenticated, cartItems.length, router, orderSuccess]);
 
   // Calculate order totals
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = 10 // Fixed shipping cost for now
-  const tax = subtotal * 0.08 // 8% tax rate
-  const total = subtotal + shipping + tax
+  const subtotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+  const shipping = 10; // Fixed shipping cost for now
+  const tax = subtotal * 0.08; // 8% tax rate
+  const total = subtotal + shipping + tax;
 
   // Handle form submission
   async function onSubmit(data: CheckoutFormValues) {
-    if (!user) return
+    if (!user) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       const order = await placeOrder(
         user.id,
         cartItems,
         data.shipping as ShippingAddress,
-        data.payment as PaymentMethod,
-      )
+        data.payment as PaymentMethod
+      );
 
       // Clear the cart after successful order
-      clearCart()
+      clearCart();
 
       // Show success state
-      setOrderSuccess(true)
-      setOrderId(order.id)
+      setOrderSuccess(true);
+      setOrderId(order.id);
 
       // Show success toast
       toast({
         title: "Order Placed Successfully!",
         description: `Your order #${order.id} has been placed.`,
         variant: "default",
-      })
+      });
 
-      // Redirect to order confirmation page
-      router.push(`/order-confirmation/${order.id}`)
+      // Redirect to order confirmation page with longer delay to ensure users can see the success message
+      setTimeout(() => {
+        router.push(`/order-confirmation/${order.id}`);
+      }, 2500);
     } catch (error) {
-      console.error("Error placing order:", error)
+      console.error("Error placing order:", error);
       toast({
         title: "Order Failed",
-        description: "There was an error processing your order. Please try again.",
+        description:
+          "There was an error processing your order. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -157,15 +173,15 @@ export default function CheckoutPage() {
   const nextStep = () => {
     if (step === "shipping") {
       // Validate shipping fields before proceeding
-      const shippingData = form.getValues("shipping")
-      const shippingResult = shippingSchema.safeParse(shippingData)
+      const shippingData = form.getValues("shipping");
+      const shippingResult = shippingSchema.safeParse(shippingData);
 
       if (shippingResult.success) {
-        setStep("payment")
+        setStep("payment");
       } else {
         // Trigger validation errors
         if (!shippingResult.success) {
-          const fieldErrors = shippingResult.error.formErrors.fieldErrors
+          const fieldErrors = shippingResult.error.formErrors.fieldErrors;
 
           // Type-safe way to iterate through the errors
           Object.entries(fieldErrors).forEach(([field, errors]) => {
@@ -173,19 +189,19 @@ export default function CheckoutPage() {
               form.setError(`shipping.${field}` as any, {
                 type: "manual",
                 message: errors[0],
-              })
+              });
             }
-          })
+          });
         }
       }
     }
-  }
+  };
 
   const prevStep = () => {
     if (step === "payment") {
-      setStep("shipping")
+      setStep("shipping");
     }
-  }
+  };
 
   // Show loading state during initialization
   if (isInitializing) {
@@ -218,7 +234,10 @@ export default function CheckoutPage() {
               <Skeleton className="h-6 w-48 mb-6" />
               <div className="grid gap-4 md:grid-cols-2">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className={`space-y-2 ${i <= 2 ? "md:col-span-2" : ""}`}>
+                  <div
+                    key={i}
+                    className={`space-y-2 ${i <= 2 ? "md:col-span-2" : ""}`}
+                  >
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-10 w-full" />
                   </div>
@@ -235,7 +254,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Show success state
@@ -248,28 +267,36 @@ export default function CheckoutPage() {
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-4">Order Placed Successfully!</h1>
+          <h1 className="text-3xl font-bold mb-4">
+            Order Placed Successfully!
+          </h1>
           <p className="text-muted-foreground mb-6">
-            Your order #{orderId} has been placed and is being processed. You will be redirected to the order
-            confirmation page shortly.
+            Your order #{orderId} has been placed and is being processed. You
+            will be redirected to the order confirmation page shortly.
           </p>
           <Skeleton className="h-2 w-full mb-1 mx-auto max-w-xs" />
           <Skeleton className="h-2 w-3/4 mx-auto max-w-xs" />
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="container py-6 md:py-10">
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">Checkout</h1>
+      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">
+        Checkout
+      </h1>
 
       <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="mb-6 hidden md:flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === "shipping" || step === "payment" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  step === "shipping" || step === "payment"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
               >
                 <Truck className="h-4 w-4" />
               </div>
@@ -278,7 +305,11 @@ export default function CheckoutPage() {
             <Separator className="w-12" />
             <div className="flex items-center gap-2">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === "payment" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  step === "payment"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
               >
                 <CreditCard className="h-4 w-4" />
               </div>
@@ -287,7 +318,11 @@ export default function CheckoutPage() {
             <Separator className="w-12" />
             <div className="flex items-center gap-2">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === "confirmation" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  step === "confirmation"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
               >
                 <CheckCircle className="h-4 w-4" />
               </div>
@@ -298,16 +333,22 @@ export default function CheckoutPage() {
           {/* Mobile step indicator */}
           <div className="flex items-center justify-between mb-4 md:hidden">
             <h2 className="text-lg font-semibold">
-              {step === "shipping" ? "Shipping Information" : "Payment Information"}
+              {step === "shipping"
+                ? "Shipping Information"
+                : "Payment Information"}
             </h2>
-            <div className="text-sm text-muted-foreground">Step {step === "shipping" ? "1" : "2"} of 2</div>
+            <div className="text-sm text-muted-foreground">
+              Step {step === "shipping" ? "1" : "2"} of 2
+            </div>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {step === "shipping" && (
                 <div className="rounded-lg border p-4 md:p-6">
-                  <h2 className="mb-4 text-xl font-semibold hidden md:block">Shipping Information</h2>
+                  <h2 className="mb-4 text-xl font-semibold hidden md:block">
+                    Shipping Information
+                  </h2>
                   <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
@@ -329,7 +370,11 @@ export default function CheckoutPage() {
                         <FormItem className="md:col-span-2">
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="john.doe@example.com" {...field} />
+                            <Input
+                              type="email"
+                              placeholder="john.doe@example.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -428,7 +473,11 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div className="mt-6 flex justify-end">
-                    <Button type="button" onClick={nextStep} className="w-full md:w-auto">
+                    <Button
+                      type="button"
+                      onClick={nextStep}
+                      className="w-full md:w-auto"
+                    >
                       Continue to Payment
                     </Button>
                   </div>
@@ -437,7 +486,9 @@ export default function CheckoutPage() {
 
               {step === "payment" && (
                 <div className="rounded-lg border p-4 md:p-6">
-                  <h2 className="mb-4 text-xl font-semibold hidden md:block">Payment Information</h2>
+                  <h2 className="mb-4 text-xl font-semibold hidden md:block">
+                    Payment Information
+                  </h2>
                   <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
@@ -446,7 +497,10 @@ export default function CheckoutPage() {
                         <FormItem className="md:col-span-2">
                           <FormLabel>Card Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="4242 4242 4242 4242" {...field} />
+                            <Input
+                              placeholder="4242 4242 4242 4242"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -485,7 +539,11 @@ export default function CheckoutPage() {
                         <FormItem>
                           <FormLabel>CVV</FormLabel>
                           <FormControl>
-                            <Input placeholder="123" type="password" {...field} />
+                            <Input
+                              placeholder="123"
+                              type="password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -493,10 +551,19 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div className="mt-6 flex flex-col-reverse md:flex-row md:justify-between gap-3 md:gap-0">
-                    <Button type="button" variant="outline" onClick={prevStep} className="w-full md:w-auto">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={prevStep}
+                      className="w-full md:w-auto"
+                    >
                       Back to Shipping
                     </Button>
-                    <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full md:w-auto"
+                    >
                       {isSubmitting ? "Processing..." : "Place Order"}
                     </Button>
                   </div>
@@ -507,10 +574,15 @@ export default function CheckoutPage() {
         </div>
 
         <div>
-          <OrderSummary cartItems={cartItems} subtotal={subtotal} shipping={shipping} tax={tax} total={total} />
+          <OrderSummary
+            cartItems={cartItems}
+            subtotal={subtotal}
+            shipping={shipping}
+            tax={tax}
+            total={total}
+          />
         </div>
       </div>
     </div>
-  )
+  );
 }
-
